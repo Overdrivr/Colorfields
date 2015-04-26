@@ -1,5 +1,6 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 
@@ -15,7 +16,7 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
-
+        gamescreen.Fling(0.f,0.f);
         return false;
     }
 
@@ -33,8 +34,14 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean fling(float velocityX, float velocityY, int button) {
-
-        return false;
+        Gdx.app.log("SPEED",Float.toString(velocityX));
+        /*Vector2 v = new Vector2(velocityX,velocityY);
+        v.nor();
+        v.x *= 1500.f;
+        v.y *= 1500.f;
+        gamescreen.Fling(-v.x,v.y);*/
+        gamescreen.Fling(-velocityX,velocityY);
+        return true;
     }
 
     @Override
@@ -51,7 +58,7 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean zoom (float originalDistance, float currentDistance){
-        gamescreen.RawResize(originalDistance,currentDistance);
+        gamescreen.Zoom(originalDistance, currentDistance);
         return true;
     }
 

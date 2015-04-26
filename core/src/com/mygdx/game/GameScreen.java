@@ -8,8 +8,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -33,6 +35,10 @@ public class GameScreen implements Screen {
     final float camerabase = 800;
     float cameraunitsx;
     float cameraunitsy;
+    Vector2 cameraSpeed;
+
+    //EFFECTS
+    private ParticleEffect effect;
 
     //Game textures
     private Texture[] asteroids;
@@ -62,6 +68,7 @@ public class GameScreen implements Screen {
         cameraunitsx = camerabase;
         cameraunitsy = camerabase * h / w;
         camera.setToOrtho(false, cameraunitsx, cameraunitsy);
+        cameraSpeed = new Vector2(0,0);
         Gdx.app.log("Camera","Dimensions("+ Float.toString(cameraunitsx)+","+ Float.toString(cameraunitsy) + ")");
 
         //INPUT HANDLING
@@ -73,7 +80,15 @@ public class GameScreen implements Screen {
         rnd = new Random();
         rnd.setSeed(0);
 
+        //TEXTURES
         loadImages();
+
+        //PARTICLE EFFECTS
+        effect = new ParticleEffect();
+        effect.load(Gdx.files.internal("Particles/green_peaceful_flame"),Gdx.files.internal("Particles"));
+        effect.setPosition(300,300);
+        effect.findEmitter("Fire").setContinuous(true);
+        effect.start();
 
         //UI Init
         stage = new Stage();
@@ -89,11 +104,27 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        //Update camera position & velocity for swipe gesture
+        camera.translate(cameraSpeed.x*delta,cameraSpeed.y*delta);
+        final float alpha = 0.91f;
+        cameraSpeed.x *= alpha;
+        cameraSpeed.y *= alpha;
+
+        if(cameraSpeed.len() < 0.001f)
+        {
+            cameraSpeed.x = 0;
+            cameraSpeed.y = 0;
+        }
+
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
+        //Update particles
+        effect.update(delta);
+
         game.batch.begin();
         game.batch.draw(asteroids[0], 200, 200);
+        effect.draw(game.batch);
         //stage.act(Gdx.graphics.getDeltaTime());
         //stage.draw();
         // This is optional, but enables debug lines for tables.
@@ -137,10 +168,17 @@ public class GameScreen implements Screen {
     {
         float dx = deltaX/Gdx.graphics.getWidth()*cameraunitsx;
         float dy = deltaY/Gdx.graphics.getHeight()*cameraunitsy;
+        dx *= camera.zoom;
+        dy *= camera.zoom;
         camera.translate(dx,dy);
     }
 
-    public void RawResize(float originalDistance,float currentDistance)
+    public void Fling(float velocityX, float velocityY){
+        //cameraSpeed.x = velocityX;
+        //cameraSpeed.y = velocityY;
+    }
+
+    public void Zoom(float originalDistance,float currentDistance)
     {
         camera.zoom = originalDistance/currentDistance;
     }
