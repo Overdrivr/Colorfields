@@ -22,7 +22,7 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean tap(float x, float y, int count, int button) {
-
+        gamescreen.createSphere(x,y);
         return false;
     }
 
@@ -34,19 +34,13 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean fling(float velocityX, float velocityY, int button) {
-        Gdx.app.log("SPEED",Float.toString(velocityX));
-        /*Vector2 v = new Vector2(velocityX,velocityY);
-        v.nor();
-        v.x *= 1500.f;
-        v.y *= 1500.f;
-        gamescreen.Fling(-v.x,v.y);*/
-        gamescreen.Fling(-velocityX,velocityY);
+        gamescreen.Fling(velocityX,velocityY);
         return true;
     }
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-        gamescreen.RawPanView(-deltaX,deltaY);
+        gamescreen.RawPanView(deltaX,deltaY);
         return true;
     }
 
@@ -58,13 +52,12 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean zoom (float originalDistance, float currentDistance){
-        gamescreen.Zoom(originalDistance, currentDistance);
+        gamescreen.Zoom(originalDistance,currentDistance);
         return true;
     }
 
     @Override
     public boolean pinch (Vector2 initialFirstPointer, Vector2 initialSecondPointer, Vector2 firstPointer, Vector2 secondPointer){
-
         return false;
     }
 }
