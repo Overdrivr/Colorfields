@@ -22,7 +22,7 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean tap(float x, float y, int count, int button) {
-        gamescreen.createSphere(x,y);
+        gamescreen.Tap(x,y);
         return false;
     }
 
