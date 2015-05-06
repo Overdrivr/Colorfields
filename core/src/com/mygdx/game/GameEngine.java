@@ -82,8 +82,13 @@ public class GameEngine {
         // Set the polygon shape as a box which is twice the size of our view port and 20 high
         // (setAsBox takes half-width and half-height as arguments)
         groundBox.setAsBox(10.f, 1.0f);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = groundBox;
+        fixtureDef.isSensor = true;
+
         // Create a fixture from our polygon shape and add it to our ground body
-        groundBody.createFixture(groundBox, 0.0f);
+        groundBody.createFixture(fixtureDef);
         // Clean up after ourselves
         groundBox.dispose();
 
@@ -92,7 +97,7 @@ public class GameEngine {
         sunBodyDef.position.set(sunPosition);
         Body sunBody = world.createBody(sunBodyDef);
         CircleShape sunShape = new CircleShape();
-        sunShape.setRadius(20.0f);
+        sunShape.setRadius(5.0f);
         sunBody.createFixture(sunShape, 0.0f);
         sunShape.dispose();
     }
@@ -130,7 +135,7 @@ public class GameEngine {
         Vector2 shootingVector = new Vector2();
         shootingVector.x = x - cannonPosition.x;
         shootingVector.y = y - cannonPosition.y;
-        shootingVector.setLength(500.f);
+        shootingVector.setLength(400.f);
 
         body.applyLinearImpulse(shootingVector,cannonPosition,true);
 

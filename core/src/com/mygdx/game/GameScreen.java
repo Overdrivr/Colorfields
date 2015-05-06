@@ -54,6 +54,7 @@ public class GameScreen implements Screen {
 
     //Game textures
     private Texture[] asteroids;
+    private Texture contour;
 
     Random rnd;
 
@@ -69,12 +70,15 @@ public class GameScreen implements Screen {
 
     public GameEngine engine;
 
+    public PNGtoBox2D converter;
+
     public GameScreen(final MyGdxGame g) {
         game = g;
         initSkin();
 
         //Init game engine
         engine = new GameEngine();
+        converter = new PNGtoBox2D();
 
         //Internalization
         FileHandle baseFileHandle = Gdx.files.internal("I18N/GameScreenBundle");
@@ -147,6 +151,7 @@ public class GameScreen implements Screen {
 
         game.batch.begin();
         game.batch.draw(asteroids[0], 200, 200);
+        game.batch.draw(contour, 200, 200);
         effect.draw(game.batch);
         debugRenderer.render(engine.world, camera.combined);
         game.batch.end();
@@ -227,6 +232,8 @@ public class GameScreen implements Screen {
     private void loadImages(){
         asteroids = new Texture[4];
         asteroids[0] = new Texture(Gdx.files.internal("Asteroids/A1_red.png"));
+        converter.marchingSquares(new Pixmap(Gdx.files.internal("Asteroids/A1_red.png")));
+        contour = new Texture(converter.result);
     }
 
     private void initSkin(){
