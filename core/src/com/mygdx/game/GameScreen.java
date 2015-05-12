@@ -32,6 +32,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.I18NBundle;
 
+
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Random;
@@ -54,7 +55,7 @@ public class GameScreen implements Screen {
 
     //Game textures
     private Texture[] asteroids;
-    private Texture contour;
+    private Texture contour, contour2;
 
     Random rnd;
 
@@ -151,7 +152,8 @@ public class GameScreen implements Screen {
 
         game.batch.begin();
         game.batch.draw(asteroids[0], 200, 200);
-        game.batch.draw(contour, 200, 200);
+        game.batch.draw(contour, 200, 500);
+        game.batch.draw(contour2, 200, 200);
         effect.draw(game.batch);
         debugRenderer.render(engine.world, camera.combined);
         game.batch.end();
@@ -225,15 +227,43 @@ public class GameScreen implements Screen {
         camera.zoom *= (originalDistance/currentDistance-1)*0.1+1;
         if(camera.zoom < 0.3f)
             camera.zoom = 0.3f;
-        if(camera.zoom > 5.f)
+        if(camera.zoom > 10.f)
             camera.zoom = 5.f;
     }
 
     private void loadImages(){
         asteroids = new Texture[4];
         asteroids[0] = new Texture(Gdx.files.internal("Asteroids/A1_red.png"));
-        converter.marchingSquares(new Pixmap(Gdx.files.internal("Asteroids/A1_red.png")));
+
+        Array<Vector2> v = converter.marchingSquares(new Pixmap(Gdx.files.internal("Asteroids/A1_red.png")));
         contour = new Texture(converter.result);
+
+        // Create texture for simplified contour
+        Pixmap p = new Pixmap(asteroids[0].getWidth(),asteroids[0].getHeight(),Pixmap.Format.RGBA8888);
+        Array<Vector2> w = converter.RDP(v, 3.f);
+        Iterator<Vector2> i = w.iterator();
+
+        Color c = new Color();
+        c.r = 0.f;
+        c.g = 0.f;
+        c.b = 0.f;
+        c.a = 0.f;
+        p.setColor(c);
+        p.fill();
+        c.r = 1.f;
+        c.g = 1.f;
+        c.b = 0.f;
+        c.a = 1.f;
+
+        while(i.hasNext()){
+            Vector2 point = i.next();
+            p.setColor(c);
+            p.drawPixel((int)(point.x),(int)(point.y));
+        }
+
+        contour2 = new Texture(p);
+
+        Gdx.app.log("RDP",Integer.toString(v.size)+" reduced to "+Integer.toString(w.size));
     }
 
     private void initSkin(){
