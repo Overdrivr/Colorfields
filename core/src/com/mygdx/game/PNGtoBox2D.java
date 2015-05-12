@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 
 /**
@@ -14,8 +15,8 @@ public class PNGtoBox2D {
         private float tolerance = 0.99f;
         public Pixmap result;
 
-        public FloatArray marchingSquares(Pixmap pixmap){
-            FloatArray contourVector = new FloatArray();
+        public Array<Vector2> marchingSquares(Pixmap pixmap){
+            Array<Vector2> contourVector = new Array<Vector2>();
 
             // Debug
             result = new Pixmap(pixmap.getWidth(),pixmap.getHeight(),pixmap.getFormat());
@@ -185,8 +186,7 @@ public class PNGtoBox2D {
                     result.drawPixel(pX,pY);
 
                     // saving contour point
-                    contourVector.add(pX);
-                    contourVector.add(pY);
+                    contourVector.add(new Vector2(pX,pY));
                     count++;
                     prevX=stepX;
                     prevY=stepY;
@@ -245,7 +245,7 @@ public class PNGtoBox2D {
 			*/
             int squareValue = 0;
             // checking upper left pixel
-            if (alpha11 >= tolerance) {
+            if (alpha11 > tolerance) {
                 squareValue+=1;
             }
             // checking upper pixel
@@ -262,60 +262,85 @@ public class PNGtoBox2D {
             }
             return squareValue;
         }
-/*
-    public FloatArray RDP(FloatArray v, float epsilon){
-        Vector2 firstPoint = new Vector2();
-        firstPoint.x = v.get(0);
-        firstPoint.y = v.get(1);
 
-        Vector2 lastPoint = new Vector2();
-        lastPoint.x = v.get(v.size-2);
-        lastPoint.y = v.get(v.size-1);//A partir de 0 ou 1
+    /* ----
+    To simplify contours
+    ---- */
+    public Array<Vector2> RDP(Array<Vector2> v, float epsilon){
 
-        if (v.size<3) {
+        //Ameliorations : Utiliser le point 0 et le pt milieu comme ligne de depart
+
+        Vector2 firstPoint = v.get(0);
+        Vector2 lastPoint = v.get(v.size-1);
+
+        /*Gdx.app.log("RDP -----","----------");
+        Gdx.app.log("RDP 1st pt","("+Float.toString(firstPoint.x)+","+Float.toString(firstPoint.y)+")");
+        Gdx.app.log("RDP last pt","("+Float.toString(lastPoint.x)+","+Float.toString(lastPoint.y)+")");*/
+
+        if (v.size < 3) {
             return v;
         }
 
         int index=-1;
         float dist=0.f;
-        for (int i=1; i<v.size-1; i++) {
+
+        for (int i = 0 ; i < v.size - 1 ; i++) {
             float cDist = findPerpendicularDistance(v.get(i),firstPoint,lastPoint);
             if (cDist>dist) {
                 dist=cDist;
                 index=i;
+                //Gdx.app.log("RDP i",Integer.toString(i));
             }
         }
+
+        //Gdx.app.log("RDP furthest pt","("+Float.toString(v.get(index).x)+","+Float.toString(v.get(index).y)+")");
+
         if (dist>epsilon) {
-            FloatArray l1=v.slice(0,index+1);
-            FloatArray l2=v.slice(index);
-            FloatArray r1=RDP(l1,epsilon);
-            FloatArray r2=RDP(l2,epsilon);
-            FloatArray rs=r1.slice(0,r1.size-1).concat(r2);
+            Array<Vector2> l1 = new Array<Vector2>(v);
+            Array<Vector2> l2 = new Array<Vector2>(v);
+            //Garde de 0 a index
+            l1.removeRange(index+1,v.size-1);
+            //Garde de index a end
+            l2.removeRange(0,index-1);
+
+            Array<Vector2> r1 = RDP(l1,epsilon);
+            Array<Vector2> r2 = RDP(l2,epsilon);
+
+            Array<Vector2> rs = new Array<Vector2>(r1);
+            //Garde de 0 a size - 1
+            rs.removeIndex(r1.size-2);
+            //Append r2
+            rs.addAll(r2);
+            /*Gdx.app.log("RDP","reached midpoint ; array size "+Integer.toString(rs.size));
+            Gdx.app.log("RDP","v "+Integer.toString(v.size));
+            Gdx.app.log("RDP","index "+Integer.toString(index));
+            Gdx.app.log("RDP","l1 "+Integer.toString(l1.size));
+            Gdx.app.log("RDP","l2 "+Integer.toString(l2.size));
+
+            return v;*/
             return rs;
         }
         else {
-            FloatArray f = new FloatArray();
-            f.add(firstPoint.x);
-            f.add(firstPoint.y);
-            f.add(lastPoint.x);
-            f.add(lastPoint.y);
+            Array<Vector2> f = new Array<Vector2>();
+            f.add(firstPoint);
+            f.add(lastPoint);
+            //Gdx.app.log("RDP","reached endpoint");
             return f;
         }
-        return null;
     }
 
-    private function findPerpendicularDistance(p:Point, p1:Point,p2:Point) {
-        var result;
-        var slope;
-        var intercept;
+    private float findPerpendicularDistance(Vector2 p, Vector2 p1, Vector2 p2) {
+        float result;
+        float slope;
+        float intercept;
         if (p1.x==p2.x) {
             result=Math.abs(p.x-p1.x);
         }
         else {
             slope = (p2.y - p1.y) / (p2.x - p1.x);
-            intercept=p1.y-(slope*p1.x);
-            result = Math.abs(slope * p.x - p.y + intercept) / Math.sqrt(Math.pow(slope, 2) + 1);
+            intercept = p1.y-(slope*p1.x);
+            result = (float)(Math.abs(slope * p.x - p.y + intercept) / Math.sqrt(Math.pow(slope, 2) + 1));
         }
         return result;
-    }*/
+    }
 }
