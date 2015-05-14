@@ -71,15 +71,17 @@ public class GameScreen implements Screen {
 
     public GameEngine engine;
 
-    public PNGtoBox2D converter;
-
     public GameScreen(final MyGdxGame g) {
+
+        //To test specific portions of code
+        //testaera();
+
         game = g;
         initSkin();
 
         //Init game engine
         engine = new GameEngine();
-        converter = new PNGtoBox2D();
+
 
         //Internalization
         FileHandle baseFileHandle = Gdx.files.internal("I18N/GameScreenBundle");
@@ -151,9 +153,9 @@ public class GameScreen implements Screen {
         effect.update(delta);
 
         game.batch.begin();
-        game.batch.draw(asteroids[0], 200, 200);
-        game.batch.draw(contour, 200, 500);
-        game.batch.draw(contour2, 200, 200);
+        game.batch.draw(asteroids[0], 50, 50);
+        //game.batch.draw(contour, 200, 500);
+        //game.batch.draw(contour2, 200, 200);
         effect.draw(game.batch);
         debugRenderer.render(engine.world, camera.combined);
         game.batch.end();
@@ -234,36 +236,6 @@ public class GameScreen implements Screen {
     private void loadImages(){
         asteroids = new Texture[4];
         asteroids[0] = new Texture(Gdx.files.internal("Asteroids/A1_red.png"));
-
-        Array<Vector2> v = converter.marchingSquares(new Pixmap(Gdx.files.internal("Asteroids/A1_red.png")));
-        contour = new Texture(converter.result);
-
-        // Create texture for simplified contour
-        Pixmap p = new Pixmap(asteroids[0].getWidth(),asteroids[0].getHeight(),Pixmap.Format.RGBA8888);
-        Array<Vector2> w = converter.RDP(v, 3.f);
-        Iterator<Vector2> i = w.iterator();
-
-        Color c = new Color();
-        c.r = 0.f;
-        c.g = 0.f;
-        c.b = 0.f;
-        c.a = 0.f;
-        p.setColor(c);
-        p.fill();
-        c.r = 1.f;
-        c.g = 1.f;
-        c.b = 0.f;
-        c.a = 1.f;
-
-        while(i.hasNext()){
-            Vector2 point = i.next();
-            p.setColor(c);
-            p.drawPixel((int)(point.x),(int)(point.y));
-        }
-
-        contour2 = new Texture(p);
-
-        Gdx.app.log("RDP",Integer.toString(v.size)+" reduced to "+Integer.toString(w.size));
     }
 
     private void initSkin(){
@@ -313,5 +285,26 @@ public class GameScreen implements Screen {
         Slider.SliderStyle sliderstyle = new Slider.SliderStyle();
         sliderstyle.background = skin.newDrawable("white",Color.OLIVE);
         skin.add("default-horizontal",sliderstyle);
+    }
+
+    private void testaera(){
+        Array<Vector2> l1 = new Array<Vector2>();
+
+        l1.add(new Vector2(0,3));
+        l1.add(new Vector2(1,6));
+        l1.add(new Vector2(2,25));
+        l1.add(new Vector2(3,19));
+        l1.add(new Vector2(4,16));
+        l1.add(new Vector2(5,12));
+        l1.add(new Vector2(6,4));
+        l1.add(new Vector2(7,6));
+
+        PNGtoBox2D converter = new PNGtoBox2D();
+        l1 = converter.RDP(l1,1.f);
+
+        Gdx.app.log("DEBUG","-----");
+        for(int i = 0 ; i < l1.size ; i++){
+            Gdx.app.log(Float.toString(l1.get(i).x),Float.toString(l1.get(i).y));
+        }
     }
 }

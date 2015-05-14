@@ -1,5 +1,9 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -10,7 +14,10 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -100,6 +107,12 @@ public class GameEngine {
         sunShape.setRadius(5.0f);
         sunBody.createFixture(sunShape, 0.0f);
         sunShape.dispose();
+
+        //Create an asteroid
+        createAsteroid();
+
+        //test aera
+        testarea();
     }
 
     public void createSphere(float x, float y)
@@ -135,10 +148,82 @@ public class GameEngine {
         Vector2 shootingVector = new Vector2();
         shootingVector.x = x - cannonPosition.x;
         shootingVector.y = y - cannonPosition.y;
-        shootingVector.setLength(400.f);
+        shootingVector.setLength(4000.f);//400
 
         body.applyLinearImpulse(shootingVector,cannonPosition,true);
 
         circle.dispose();
+    }
+
+    public void createAsteroid(){
+        //Init tools
+        PNGtoBox2D converter = new PNGtoBox2D();
+        b2Separator splitter = new b2Separator();
+        ContourToPolygons triangulator = new ContourToPolygons();
+
+        //Detect contour
+        Array<Vector2> v = converter.marchingSquares(new Pixmap(Gdx.files.internal("Asteroids/A1_red.png")));
+
+        // Simplify contour
+        Array<Vector2> w = converter.RDP(v, 1.f);
+        w.reverse();
+
+        //Create body
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.position.set(new Vector2(50.f,50.f));
+
+        // Create a fixture definition to apply our shape to
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 0.5f;
+        fixtureDef.friction = 0.8f;
+        fixtureDef.restitution = 0.6f; // Make it bounce a little bit
+
+        // Create our body in the world using our body definition
+        Body body = world.createBody(bodyDef);
+
+        // Generate convex hull from simplified contour
+        Vector2[] z = w.toArray(Vector2.class);
+
+        Gdx.app.log("Convex Hull check",Integer.toString(splitter.validate(z)));
+        //splitter.separate(body,fixtureDef,z);
+        triangulator.BuildShape(body,fixtureDef,w);
+        Gdx.app.log("Convex Hull","generated");
+    }
+
+    private void testarea(){
+        //Define a concave shape
+        Array<Vector2> v = new Array<Vector2>();
+        v.add(new Vector2(200,200));
+        v.add(new Vector2(180,170));
+        v.add(new Vector2(190,130));
+        v.add(new Vector2(220,120));
+        v.add(new Vector2(220,90));
+        v.add(new Vector2(210,70));
+        v.add(new Vector2(230,40));
+        v.add(new Vector2(270,90));
+        v.add(new Vector2(250,140));
+        v.add(new Vector2(260,160));
+
+        //Create body
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.position.set(new Vector2(-100.f,0.f));
+
+        // Create a fixture definition to apply our shape to
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 0.5f;
+        fixtureDef.friction = 0.8f;
+        fixtureDef.restitution = 0.6f; // Make it bounce a little bit
+
+        // Create our body in the world using our body definition
+        Body body = world.createBody(bodyDef);
+
+        b2Separator splitter = new b2Separator();
+        ContourToPolygons triangulator = new ContourToPolygons();
+
+        Vector2[] z = v.toArray(Vector2.class);
+        //splitter.separate(body,fixtureDef,z);
+        triangulator.BuildShape(body,fixtureDef,v);
     }
 }
