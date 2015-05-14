@@ -293,38 +293,44 @@ public class PNGtoBox2D {
             }
         }
 
-        //Gdx.app.log("RDP furthest pt","("+Float.toString(v.get(index).x)+","+Float.toString(v.get(index).y)+")");
+        /*Gdx.app.log("RDP","First point ("+Float.toString(firstPoint.x)+","+Float.toString(firstPoint.y)+")");
+        Gdx.app.log("RDP","Last  point ("+Float.toString(lastPoint.x)+","+Float.toString(lastPoint.y)+")");
+        Gdx.app.log("RDP","Furthest pt ("+Float.toString(v.get(index).x)+","+Float.toString(v.get(index).y)+")");*/
 
-        if (dist>epsilon) {
+        if (dist>=epsilon) {
+            //Gdx.app.log("RDP","Recursive index "+Integer.toString(index));
             Array<Vector2> l1 = new Array<Vector2>(v);
             Array<Vector2> l2 = new Array<Vector2>(v);
             //Garde de 0 a index
-            l1.removeRange(index+1,v.size-1);
+            l1.truncate(index+1);
+
+            /*for(int i = 0 ; i < l1.size ; i++){
+                Gdx.app.log("---- L1-- ","("+Float.toString(l1.get(i).x)+","+Float.toString(l1.get(i).y)+")");
+            }*/
             //Garde de index a end
             l2.removeRange(0,index-1);
+
+            /*for(int i = 0 ; i < l2.size ; i++){
+                Gdx.app.log("---- L2-- ","("+Float.toString(l2.get(i).x)+","+Float.toString(l2.get(i).y)+")");
+            }*/
 
             Array<Vector2> r1 = RDP(l1,epsilon);
             Array<Vector2> r2 = RDP(l2,epsilon);
 
             Array<Vector2> rs = new Array<Vector2>(r1);
             //Garde de 0 a size - 1
-            rs.removeIndex(r1.size-2);
+            rs.truncate(r1.size-1);
             //Append r2
             rs.addAll(r2);
-            /*Gdx.app.log("RDP","reached midpoint ; array size "+Integer.toString(rs.size));
-            Gdx.app.log("RDP","v "+Integer.toString(v.size));
-            Gdx.app.log("RDP","index "+Integer.toString(index));
-            Gdx.app.log("RDP","l1 "+Integer.toString(l1.size));
-            Gdx.app.log("RDP","l2 "+Integer.toString(l2.size));
 
-            return v;*/
             return rs;
         }
         else {
             Array<Vector2> f = new Array<Vector2>();
             f.add(firstPoint);
             f.add(lastPoint);
-            //Gdx.app.log("RDP","reached endpoint");
+
+            //Gdx.app.log("RDP","Ignored index "+Integer.toString(index));
             return f;
         }
     }
