@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -14,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 
 import java.util.ArrayList;
@@ -32,8 +34,33 @@ public class GameEngine {
     Vector2 sunPosition;
     Vector2 cannonPosition;
 
-    public GameEngine(){
+    b2Separator splitter;
+    ContourToPolygons triangulator;
+
+    //Image processing
+    PNGtoBox2D converter;
+
+    AssetManager assetManager;
+
+    //Game objects
+    Stage stage;
+    public Array<MassiveAsteroid> massiveAsteroids;
+
+    public GameEngine(final Stage s){
+        stage = s;
+        //Init tools
+        converter = new PNGtoBox2D();
+        splitter = new b2Separator();
+        triangulator = new ContourToPolygons();
+        //
+        assetManager = new AssetManager();
+        // Init physics
         initPhysics();
+
+        // Init level
+        massiveAsteroids = new Array<MassiveAsteroid>();
+        massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A1_red.png",new Vector2(-600.f,200.f)));
+        //massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A2_orange.png",new Vector2(100.f,100.f)));
     }
 
     public void doPhysicsStep(float deltaTime) {
@@ -112,7 +139,7 @@ public class GameEngine {
         createAsteroid();
 
         //test aera
-        testarea();
+        //testarea();
     }
 
     public void createSphere(float x, float y)
@@ -156,39 +183,9 @@ public class GameEngine {
     }
 
     public void createAsteroid(){
-        //Init tools
-        PNGtoBox2D converter = new PNGtoBox2D();
-        b2Separator splitter = new b2Separator();
-        ContourToPolygons triangulator = new ContourToPolygons();
 
-        //Detect contour
-        Array<Vector2> v = converter.marchingSquares(new Pixmap(Gdx.files.internal("Asteroids/A1_red.png")));
 
-        // Simplify contour
-        Array<Vector2> w = converter.RDP(v, 1.f);
-        w.reverse();
 
-        //Create body
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(new Vector2(50.f,50.f));
-
-        // Create a fixture definition to apply our shape to
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.8f;
-        fixtureDef.restitution = 0.6f; // Make it bounce a little bit
-
-        // Create our body in the world using our body definition
-        Body body = world.createBody(bodyDef);
-
-        // Generate convex hull from simplified contour
-        Vector2[] z = w.toArray(Vector2.class);
-
-        Gdx.app.log("Convex Hull check",Integer.toString(splitter.validate(z)));
-        //splitter.separate(body,fixtureDef,z);
-        triangulator.BuildShape(body,fixtureDef,w);
-        Gdx.app.log("Convex Hull","generated");
     }
 
     private void testarea(){
