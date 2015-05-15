@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -23,14 +24,17 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.I18NBundle;
+import com.badlogic.gdx.utils.viewport.FillViewport;
 
 
 import java.util.Iterator;
@@ -44,11 +48,12 @@ import java.util.Vector;
 public class GameScreen implements Screen {
 
     final MyGdxGame game;
-    OrthographicCamera camera;
+    //OrthographicCamera camera;
     final float camerabase = 800;
     float cameraunitsx;
     float cameraunitsy;
     Vector2 cameraSpeed;
+    float initial_zoom;
 
     //EFFECTS
     private ParticleEffect effect;
@@ -79,24 +84,19 @@ public class GameScreen implements Screen {
         game = g;
         initSkin();
 
+        // Stage controls the rendering process
+        // Viewports helps managing the camera render aera in function of the device
+        stage = new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()));
+        cameraSpeed = new Vector2(0,0);
+
         //Init game engine
-        engine = new GameEngine();
+        engine = new GameEngine(stage);
 
 
         //Internalization
         FileHandle baseFileHandle = Gdx.files.internal("I18N/GameScreenBundle");
         Locale locale = new Locale("en", "GB");
         myBundle = I18NBundle.createBundle(baseFileHandle, locale);
-
-        //Camera
-        camera = new OrthographicCamera();
-        float w = Gdx.graphics.getWidth();
-        float h = Gdx.graphics.getHeight();
-        cameraunitsx = camerabase;
-        cameraunitsy = camerabase * h / w;
-        camera.setToOrtho(false, cameraunitsx, cameraunitsy);
-        cameraSpeed = new Vector2(0,0);
-        Gdx.app.log("Camera","Dimensions("+ Float.toString(cameraunitsx)+","+ Float.toString(cameraunitsy) + ")");
 
         //INPUT HANDLING
         MyGestureListener gestureListener = new MyGestureListener();
@@ -112,19 +112,24 @@ public class GameScreen implements Screen {
 
         //PARTICLE EFFECTS
         effect = new ParticleEffect();
-        effect.load(Gdx.files.internal("Particles/green_peaceful_flame"),Gdx.files.internal("Particles"));
-        effect.setPosition(300,300);
+        effect.load(Gdx.files.internal("Particles/green_peaceful_flame"), Gdx.files.internal("Particles"));
+        effect.setPosition(300, 300);
         effect.findEmitter("Fire").setContinuous(true);
         effect.start();
 
         //UI Init
-        stage = new Stage();
         shapeRenderer = new ShapeRenderer();
         //Gdx.input.setInputProcessor(stage);
 
         //Debug rendering
         debugRenderer = new Box2DDebugRenderer();
         debugRenderer.setDrawVelocities(true);
+        debugRenderer.setDrawAABBs(true);
+
+
+        asteroids[0] = new Texture(Gdx.files.internal("TestAssets/grid.png"));
+        Image testasset = new Image(asteroids[0]);
+        stage.addActor(testasset);
     }
 
 
@@ -134,11 +139,29 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        //Update camera position & velocity for swipe gesture
-        camera.translate(cameraSpeed.x*delta,cameraSpeed.y*delta);
-        final float alpha = 0.91f;
+        // Let camera slide at the end of the fling
+        if(cameraSpeed.len() > 0.001f)
+        {
+
+        }
+        stage.getCamera().translate(cameraSpeed.x, cameraSpeed.y, 0.f);
+        final float alpha = 0.81f;
+        // Increase alpha when zoom has a low value (big zoom)
         cameraSpeed.x *= alpha;
         cameraSpeed.y *= alpha;
+
+        stage.act(delta);
+        stage.draw();
+
+        debugRenderer.render(engine.world, stage.getViewport().getCamera().combined);
+        engine.doPhysicsStep(delta);
+
+        /*game.batch.setProjectionMatrix(camera.combined);
+        // Render
+        game.batch.begin();
+        game.batch.draw(asteroids[0],0,0);
+        game.batch.end();*/
+        /*
 
         if(cameraSpeed.len() < 0.001f)
         {
@@ -149,17 +172,24 @@ public class GameScreen implements Screen {
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
-        //Update particles
-        effect.update(delta);
+        // Update particles
+        //effect.update(delta);
 
+        // Render
         game.batch.begin();
-        game.batch.draw(asteroids[0], 50, 50);
-        //game.batch.draw(contour, 200, 500);
-        //game.batch.draw(contour2, 200, 200);
-        effect.draw(game.batch);
+
+        for(int i = 0 ; i < engine.massiveAsteroids.size ; i++){
+           engine.massiveAsteroids.get(i).draw(game.batch);
+        }
+        game.batch.draw(asteroids[0],0,0);
+        //effect.draw(game.batch);
         debugRenderer.render(engine.world, camera.combined);
         game.batch.end();
-        engine.doPhysicsStep(delta);
+        engine.doPhysicsStep(delta);*/
+/*
+        stage.act(delta);
+        stage.draw();
+        */
     }
 
     @Override
@@ -195,42 +225,51 @@ public class GameScreen implements Screen {
     }
 
     //EVENTS
+    //Used to store initial zoom
+    public void TouchDown(){
+        initial_zoom = ((OrthographicCamera)this.stage.getCamera()).zoom;
+        Gdx.app.log("TAP","Initial ("+Float.toString(initial_zoom)+")");
+    }
     public void Tap(float x, float y){
-        Vector3 v = new Vector3(x,y,0);
-        camera.unproject(v);
-        engine.createSphere(v.x, v.y);
+        Vector2 w = stage.getViewport().unproject(new Vector2(x,y));
+        engine.createSphere(w.x, w.y);
+        //Gdx.app.log("TAP","Screen ("+Float.toString(x)+","+Float.toString(y)+")");
+        //Gdx.app.log("TAP", "World (" + Float.toString(w.x) + "," + Float.toString(w.y) + ")");
     }
 
-    public void RawPanView(float deltaX, float deltaY)
+    public void Pan(Vector2 start, Vector2 end)
     {
-        //Vector3 v = new Vector3(deltaX,deltaY,0);
-        //camera.unproject(v);
-        float dx = deltaX/Gdx.graphics.getWidth()*cameraunitsx;
-        float dy = deltaY/Gdx.graphics.getHeight()*cameraunitsy;
-        dx *= -camera.zoom;
-        dy *= camera.zoom;
-        //Gdx.app.log("Pan","("+Float.toString(v.x)+","+Float.toString(v.y)+")");
-        camera.translate(dx,dy);
+        // Translate start and end position from screen to world
+        Vector2 start_world = stage.getViewport().unproject(start);
+        Vector2 end_world = stage.getViewport().unproject(end);
+        // Compute delta in world coordinates
+        // So that, no matter the zoom the physical move of the finger
+        // will correspond to the same translation in the world
+        Vector2 diff = start_world.mulAdd(end_world,-1);
+
+        stage.getCamera().translate(diff.x,diff.y,0.f);
+
+        //Gdx.app.log("PAN", "World (" + Float.toString(diff.x)+","+Float.toString(diff.y) + ")");
     }
 
     public void Fling(float velocityX, float velocityY){
-        float dx = velocityX/Gdx.graphics.getWidth()*cameraunitsx;
-        float dy = velocityY/Gdx.graphics.getHeight()*cameraunitsy;
-        dx *= -camera.zoom;
-        dy *= camera.zoom;
-        cameraSpeed.x = dx;
-        cameraSpeed.y = dy;
+        cameraSpeed.x = -velocityX/100;
+        cameraSpeed.y =  velocityY/100;
+
+        //Gdx.app.log("FLING", "Elasticity (" + Float.toString(cameraSpeed.x) + "," +
+        //                                      Float.toString(cameraSpeed.y) + ")");
+
+        //if(cameraSpeed.len() > 200)
+         //   cameraSpeed.setLength(200);
     }
 
     public void Zoom(float originalDistance,float currentDistance)
     {
-        //Gdx.app.log("Zoom factor",Float.toString(originalDistance/currentDistance));
-        //POUR CORRIGER ZOOM, BESOIN DE DETECTER LE DEBUT ET LA FIN QD LES 2 DOIGTS SONT SUR L'ECRAN
-        camera.zoom *= (originalDistance/currentDistance-1)*0.1+1;
-        if(camera.zoom < 0.3f)
-            camera.zoom = 0.3f;
-        if(camera.zoom > 10.f)
-            camera.zoom = 5.f;
+        float ratio = originalDistance / currentDistance;
+        float final_zoom = MathUtils.clamp(initial_zoom * ratio, 0.3f, 10.0f);
+        ((OrthographicCamera)this.stage.getCamera()).zoom = final_zoom;
+
+        //Gdx.app.log("Zoom", "Final Distance (" + Float.toString(final_zoom) + ")");
     }
 
     private void loadImages(){

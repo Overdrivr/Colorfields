@@ -16,7 +16,7 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
-        gamescreen.Fling(0.f,0.f);
+        gamescreen.TouchDown();
         return false;
     }
 
@@ -40,7 +40,7 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-        gamescreen.RawPanView(deltaX,deltaY);
+        gamescreen.Pan(new Vector2(x,y),new Vector2(x+deltaX, y+deltaY));
         return true;
     }
 
