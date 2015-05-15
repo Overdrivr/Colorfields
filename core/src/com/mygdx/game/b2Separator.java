@@ -65,7 +65,7 @@ public class b2Separator {
             verticesVec = new Vector2[vec.size()];
             m = vec.size();
             for(j=0; j<m; j++) {
-                verticesVec[j] = new Vector2(vec.get(j).x / scale, vec.get(j).y / scale);
+                verticesVec[j] = new Vector2(vec.get(j).x / scale, -vec.get(j).y / scale);
             }
             polyShape = new PolygonShape();
             polyShape.set(verticesVec);

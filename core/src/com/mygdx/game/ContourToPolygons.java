@@ -64,9 +64,16 @@ public class ContourToPolygons{
             // if we have just found a valid triangle, we draw it
             //drawTriangle(triangleA,triangleB,triangleC);
             Array<Vector2> v = new Array();
-            v.add(new Vector2(thePoly.get(triangleA)));
-            v.add(new Vector2(thePoly.get(triangleB)));
-            v.add(new Vector2(thePoly.get(triangleC)));
+            Vector2 a = new Vector2(thePoly.get(triangleA));
+            Vector2 b = new Vector2(thePoly.get(triangleB));
+            Vector2 c = new Vector2(thePoly.get(triangleC));
+            a.y *= -1;
+            b.y *= -1;
+            c.y *= -1;
+
+            v.add(new Vector2(a));
+            v.add(new Vector2(b));
+            v.add(new Vector2(c));
             result.add(v);
 
             // then we remove the leftmost point found from the polygon, obtaining a smaller polygon
