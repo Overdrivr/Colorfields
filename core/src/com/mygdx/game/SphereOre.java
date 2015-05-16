@@ -1,7 +1,6 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -10,19 +9,21 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 
-import java.awt.font.TransformAttribute;
+import java.awt.Polygon;
 
 /**
- * Created by Bart on 14/05/2015.
+ * Created by Bart on 16/05/2015.
  */
-public class MassiveAsteroid extends Actor {
-    GameEngine g;
+public class SphereOre extends Actor{
+    private final GameEngine g;
     TextureRegion texture;
     Image redcross;
     Image purplecross;
@@ -31,7 +32,7 @@ public class MassiveAsteroid extends Actor {
     public Body body;
     Group root;
 
-    public MassiveAsteroid(final GameEngine game, String filename, Vector2 position, float distance){
+    public SphereOre(final GameEngine game, String filename, Vector2 position){
         g = game;
 
         //Get pixmap
@@ -51,22 +52,16 @@ public class MassiveAsteroid extends Actor {
             texture = new TextureRegion(new Texture(p));
             sprite = new Sprite(texture);
 
-            //Detect contour
-            Array<Vector2> v = g.converter.marchingSquares(p);
-
-            // Simplify contour
-            Array<Vector2> w = g.converter.RDP(v, distance);
-            w.reverse();
-
-            for(int i = 0 ; i < w.size ; i++)
-            {
-                Gdx.app.log("Simplified contour", i +" : "+w.get(i).x + " " + w.get(i).y);
-            }
 
             //Create body
             BodyDef bodyDef = new BodyDef();
             bodyDef.type = BodyDef.BodyType.DynamicBody;
             bodyDef.position.set(position);
+
+
+            /*CircleShape shape = new CircleShape();
+            shape.setRadius(50.f);*/
+
 
 
             // Create a fixture definition to apply our shape to
@@ -78,28 +73,31 @@ public class MassiveAsteroid extends Actor {
             // Create our body in the world using our body definition
             body = g.world.createBody(bodyDef);
 
-            g.triangulator.BuildShape(body, fixtureDef, w);
+            PolygonShape shape = new PolygonShape();
+            Vector2[] vec = new Vector2[4];
+            vec[0] = new Vector2(0,0);
+            vec[1] = new Vector2(30,0);
+            vec[2] = new Vector2(30,30);
+            vec[3] = new Vector2(0,30);
+            shape.set(vec);
+            fixtureDef.shape = shape;
+            body.createFixture(fixtureDef);
 
-            Gdx.app.log("Get position", Float.toString(body.getPosition().x) + " " + body.getPosition().y);
-            Gdx.app.log("Get world", Float.toString(body.getWorldCenter().x) + " " + body.getWorldCenter().y);
-            Gdx.app.log("Get local", Float.toString(body.getLocalCenter().x) + " " + body.getLocalCenter().y);
+            vec[0] = new Vector2(30,0);
+            vec[1] = new Vector2(50,0);
+            vec[2] = new Vector2(50,20);
+            vec[3] = new Vector2(30,20);
+            shape.set(vec);
+            fixtureDef.shape = shape;
+            body.createFixture(fixtureDef);
 
-
-
-            // Generate convex hull from simplified contour
-            //Vector2[] z = w.toArray(Vector2.class);
-
-            //
-            //splitter.separate(body,fixtureDef,z);
-
-            //Gdx.app.log("Convex Hull","generated");
 
             g.stage.addActor(this);
 
 
 
             purplecross = new Image(new TextureRegion(new Texture(Gdx.files.internal("TestAssets/purplecross.png"))));
-            //g.stage.addActor(purplecross);
+            g.stage.addActor(purplecross);
 
             //Intermediate node that will handle rotation around physical body
             root = new Group();
@@ -108,7 +106,7 @@ public class MassiveAsteroid extends Actor {
 
             //Center of group
             redcross = new Image(new TextureRegion(new Texture(Gdx.files.internal("TestAssets/redcross.png"))));
-            //root.addActor(redcross);
+            root.addActor(redcross);
 
             //Asset attached to group
             Texture t1 = new Texture(Gdx.files.internal(filename));
@@ -126,7 +124,7 @@ public class MassiveAsteroid extends Actor {
         root.setPosition(body.getPosition().x,body.getPosition().y);
         root.setRotation((float) (Math.toDegrees(body.getAngle())));
         root.draw(batch, parentAlpha);
-        //purplecross.setPosition(body.getPosition().x, body.getPosition().y);
-        //redcross.setPosition(asset.getX(), asset.getY());
+        purplecross.setPosition(body.getPosition().x, body.getPosition().y);
+        redcross.setPosition(asset.getX(), asset.getY());
     }
 }

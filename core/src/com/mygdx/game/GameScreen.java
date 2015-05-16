@@ -48,21 +48,13 @@ import java.util.Vector;
 public class GameScreen implements Screen {
 
     final MyGdxGame game;
-    //OrthographicCamera camera;
-    final float camerabase = 800;
-    float cameraunitsx;
-    float cameraunitsy;
+
+    FillViewport viewport;
     Vector2 cameraSpeed;
     float initial_zoom;
 
     //EFFECTS
     private ParticleEffect effect;
-
-    //Game textures
-    private Texture[] asteroids;
-    private Texture contour, contour2;
-
-    Random rnd;
 
     //Internationalization
     public I18NBundle myBundle;
@@ -86,7 +78,9 @@ public class GameScreen implements Screen {
 
         // Stage controls the rendering process
         // Viewports helps managing the camera render aera in function of the device
-        stage = new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()));
+        viewport = new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
+        stage = new Stage(viewport,g.batch);
+        stage.getCamera().translate(-Gdx.graphics.getWidth()/2.f,-Gdx.graphics.getHeight()/2.f,0.f);
         cameraSpeed = new Vector2(0,0);
 
         //Init game engine
@@ -103,13 +97,6 @@ public class GameScreen implements Screen {
         gestureListener.setGamescreen(this);
         Gdx.input.setInputProcessor(new GestureDetector(gestureListener));
 
-        //Generators
-        rnd = new Random();
-        rnd.setSeed(0);
-
-        //TEXTURES
-        loadImages();
-
         //PARTICLE EFFECTS
         effect = new ParticleEffect();
         effect.load(Gdx.files.internal("Particles/green_peaceful_flame"), Gdx.files.internal("Particles"));
@@ -124,27 +111,24 @@ public class GameScreen implements Screen {
         //Debug rendering
         debugRenderer = new Box2DDebugRenderer();
         debugRenderer.setDrawVelocities(true);
-        debugRenderer.setDrawAABBs(true);
+        //debugRenderer.setDrawAABBs(true);
 
 
-        asteroids[0] = new Texture(Gdx.files.internal("TestAssets/grid.png"));
-        Image testasset = new Image(asteroids[0]);
-        stage.addActor(testasset);
+        Texture debug_grid = new Texture(Gdx.files.internal("TestAssets/grid.png"));
+        Image testasset = new Image(debug_grid);
+        //stage.addActor(testasset);
     }
 
 
 
     @Override
     public void render(float delta) {
+
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // Let camera slide at the end of the fling
-        if(cameraSpeed.len() > 0.001f)
-        {
-
-        }
-        stage.getCamera().translate(cameraSpeed.x, cameraSpeed.y, 0.f);
+        stage.getCamera().translate(cameraSpeed.x * delta, cameraSpeed.y * delta, 0.f);
         final float alpha = 0.81f;
         // Increase alpha when zoom has a low value (big zoom)
         cameraSpeed.x *= alpha;
@@ -155,51 +139,16 @@ public class GameScreen implements Screen {
 
         debugRenderer.render(engine.world, stage.getViewport().getCamera().combined);
         engine.doPhysicsStep(delta);
-
-        /*game.batch.setProjectionMatrix(camera.combined);
-        // Render
-        game.batch.begin();
-        game.batch.draw(asteroids[0],0,0);
-        game.batch.end();*/
-        /*
-
-        if(cameraSpeed.len() < 0.001f)
-        {
-            cameraSpeed.x = 0;
-            cameraSpeed.y = 0;
-        }
-
-        camera.update();
-        game.batch.setProjectionMatrix(camera.combined);
-
-        // Update particles
-        //effect.update(delta);
-
-        // Render
-        game.batch.begin();
-
-        for(int i = 0 ; i < engine.massiveAsteroids.size ; i++){
-           engine.massiveAsteroids.get(i).draw(game.batch);
-        }
-        game.batch.draw(asteroids[0],0,0);
-        //effect.draw(game.batch);
-        debugRenderer.render(engine.world, camera.combined);
-        game.batch.end();
-        engine.doPhysicsStep(delta);*/
-/*
-        stage.act(delta);
-        stage.draw();
-        */
     }
 
     @Override
     public void resize(int x, int y){
-        stage.getViewport().update(x, y, true);
+        stage.getViewport().update(x, y, false);
     }
 
     @Override
     public void show(){
-        //Nothing to do at screen startup
+
     }
 
     @Override
@@ -221,17 +170,18 @@ public class GameScreen implements Screen {
     public void dispose(){
         stage.dispose();
         shapeRenderer.dispose();
-        asteroids[0].dispose();
     }
 
     //EVENTS
     //Used to store initial zoom
     public void TouchDown(){
         initial_zoom = ((OrthographicCamera)this.stage.getCamera()).zoom;
-        Gdx.app.log("TAP","Initial ("+Float.toString(initial_zoom)+")");
+        cameraSpeed.x = 0;
+        cameraSpeed.y = 0;
+        //Gdx.app.log("TAP","Initial ("+Float.toString(initial_zoom)+")");
     }
     public void Tap(float x, float y){
-        Vector2 w = stage.getViewport().unproject(new Vector2(x,y));
+        Vector2 w = stage.getViewport().unproject(new Vector2(x, y));
         engine.createSphere(w.x, w.y);
         //Gdx.app.log("TAP","Screen ("+Float.toString(x)+","+Float.toString(y)+")");
         //Gdx.app.log("TAP", "World (" + Float.toString(w.x) + "," + Float.toString(w.y) + ")");
@@ -253,14 +203,18 @@ public class GameScreen implements Screen {
     }
 
     public void Fling(float velocityX, float velocityY){
-        cameraSpeed.x = -velocityX/100;
-        cameraSpeed.y =  velocityY/100;
+        Vector2 start = stage.getViewport().unproject(new Vector2(0,0));
+        Vector2 end = stage.getViewport().unproject(new Vector2(velocityX,velocityY));
+
+        // Compute speed in world coordinates to account for zoom levels
+        Vector2 diff = start.mulAdd(end, -1);
+
+        cameraSpeed.x = diff.x;
+        cameraSpeed.y = diff.y;
 
         //Gdx.app.log("FLING", "Elasticity (" + Float.toString(cameraSpeed.x) + "," +
         //                                      Float.toString(cameraSpeed.y) + ")");
 
-        //if(cameraSpeed.len() > 200)
-         //   cameraSpeed.setLength(200);
     }
 
     public void Zoom(float originalDistance,float currentDistance)
@@ -270,11 +224,6 @@ public class GameScreen implements Screen {
         ((OrthographicCamera)this.stage.getCamera()).zoom = final_zoom;
 
         //Gdx.app.log("Zoom", "Final Distance (" + Float.toString(final_zoom) + ")");
-    }
-
-    private void loadImages(){
-        asteroids = new Texture[4];
-        asteroids[0] = new Texture(Gdx.files.internal("Asteroids/A1_red.png"));
     }
 
     private void initSkin(){

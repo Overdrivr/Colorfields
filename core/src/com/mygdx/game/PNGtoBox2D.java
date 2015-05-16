@@ -194,7 +194,7 @@ public class PNGtoBox2D {
                     // if we returned to the first point visited, the loop has finished
                     if (pX==startPoint.x&&pY==startPoint.y) {
                         closedLoop=true;
-                        Gdx.app.log("Triangulation","Done with "+Integer.toString(count)+" points");
+                        //Gdx.app.log("Triangulation","Done with "+Integer.toString(count)+" points");
                     }
                 }
             }
@@ -223,7 +223,7 @@ public class PNGtoBox2D {
 
                     int val = getSquareValue(alpha11,alpha12,alpha21,alpha22);
                     if (val > 0 && val < 15) {
-                        Gdx.app.log("Triangulation","Found starting pixel : ("+Float.toString(zeroPoint.x)+","+Float.toString(zeroPoint.y)+")");
+                        //Gdx.app.log("Triangulation","Found starting pixel : ("+Float.toString(zeroPoint.x)+","+Float.toString(zeroPoint.y)+")");
                         return zeroPoint;
                     }
                 }

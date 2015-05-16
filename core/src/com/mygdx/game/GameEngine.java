@@ -45,6 +45,7 @@ public class GameEngine {
     //Game objects
     Stage stage;
     public Array<MassiveAsteroid> massiveAsteroids;
+    public Array<SphereOre> ores;
 
     public GameEngine(final Stage s){
         stage = s;
@@ -59,8 +60,15 @@ public class GameEngine {
 
         // Init level
         massiveAsteroids = new Array<MassiveAsteroid>();
-        massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A1_red.png",new Vector2(-600.f,200.f)));
-        //massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A2_orange.png",new Vector2(100.f,100.f)));
+        massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A1_red.png",new Vector2(-250.f,0.f),3.f));
+       // massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_1_contours.png",new Vector2(-750.f,100.f),3.f));
+       // massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_2_contours.png",new Vector2(-500.f,350.f),3.f));
+        //massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_3.png",new Vector2(0.f,700.f),1.f));
+        //massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_4.png",new Vector2(0.f,400.f),1.f));
+        massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A2_orange.png",new Vector2(-850.f,150.f),3.f));
+
+        ores = new Array<SphereOre>();
+        ores.add(new SphereOre(this,"TestAssets/doublesquare.png",new Vector2(-700.f,60.f)));
     }
 
     public void doPhysicsStep(float deltaTime) {
@@ -98,15 +106,15 @@ public class GameEngine {
     private void initPhysics(){
         //PHYSICS
         world = new World(new Vector2(0.f,0.f),true);
-        sunPosition = new Vector2(0.f,90.f);
-        cannonPosition = new Vector2(1.f,10.f);
+        sunPosition = new Vector2(-400.f,90.f);
+        cannonPosition = new Vector2(-400.f,10.f);
 
         spheres = new Vector();
 
         // Create our body definition
         BodyDef groundBodyDef = new BodyDef();
         // Set its world position
-        groundBodyDef.position.set(new Vector2(0, 1));
+        groundBodyDef.position.set(new Vector2(-400, 1));
 
         // Create a body from the definition and add it to the world
         Body groundBody = world.createBody(groundBodyDef);
@@ -134,9 +142,6 @@ public class GameEngine {
         sunShape.setRadius(5.0f);
         sunBody.createFixture(sunShape, 0.0f);
         sunShape.dispose();
-
-        //Create an asteroid
-        createAsteroid();
 
         //test aera
         //testarea();
@@ -180,12 +185,6 @@ public class GameEngine {
         body.applyLinearImpulse(shootingVector,cannonPosition,true);
 
         circle.dispose();
-    }
-
-    public void createAsteroid(){
-
-
-
     }
 
     private void testarea(){
