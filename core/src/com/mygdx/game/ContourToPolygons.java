@@ -1,5 +1,6 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -27,6 +28,10 @@ public class ContourToPolygons{
         {
             Array<Vector2> vec = result.get(i);
             Vector2[] verticesVec = vec.toArray(Vector2.class);
+
+            Gdx.app.log("------ ", i+"");
+            for (int j = 0 ; j < vec.size ; j++)
+                Gdx.app.log("T"+i+" : "+j+"", vec.get(j).x + " " + vec.get(j).y);
 
             polyShape = new PolygonShape();
             polyShape.set(verticesVec);
@@ -67,9 +72,9 @@ public class ContourToPolygons{
             Vector2 a = new Vector2(thePoly.get(triangleA));
             Vector2 b = new Vector2(thePoly.get(triangleB));
             Vector2 c = new Vector2(thePoly.get(triangleC));
-            a.y *= -1;
+            /*a.y *= -1;
             b.y *= -1;
-            c.y *= -1;
+            c.y *= -1;*/
 
             v.add(new Vector2(a));
             v.add(new Vector2(b));
