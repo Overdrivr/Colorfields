@@ -135,6 +135,7 @@ public class GameScreen implements Screen {
         cameraSpeed.y *= alpha;
 
         stage.act(delta);
+        engine.debugDraw(stage.getCamera().combined);
         stage.draw();
 
         debugRenderer.render(engine.world, stage.getViewport().getCamera().combined);
