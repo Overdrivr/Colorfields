@@ -73,6 +73,8 @@ public class GameEngine {
     private void initLevel(){
         // Grid
         field = new GravityField(new Vector2(-500,-500),50,20.f);
+        field.addSphericalAttractor(new Vector2(-200,-200));
+        field.debugDrawGrid = false;
 
         // Massive asteroids
         massiveAsteroids = new Array<MassiveAsteroid>();
@@ -108,7 +110,7 @@ public class GameEngine {
 
         for(Body b : spheres){
             //Compute vector from center of body to center of sun
-            Vector2 v = b.getPosition();
+            /*Vector2 v = b.getPosition();
             float r = v.dst(sunPosition);
             v.x = sunPosition.x - v.x;
             v.y = sunPosition.y - v.y;
@@ -118,7 +120,9 @@ public class GameEngine {
             v.setLength(force);
             //Gdx.app.log("Force",Float.toString(v.x)+" "+Float.toString(v.y));
             //Apply force to each body
-            b.applyForce(v, b.getWorldCenter(), true);
+            b.applyForce(v, b.getWorldCenter(), true);*/
+            Vector2 force = field.getForce(b.getPosition().x,b.getPosition().y);
+            b.applyForce(force,b.getPosition(),true);
         }
     }
 
@@ -188,7 +192,7 @@ public class GameEngine {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = circle;
         fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.8f;
+        fixtureDef.friction = 5.0f;
         fixtureDef.restitution = 0.6f; // Make it bounce a little bit
 
 
@@ -199,7 +203,7 @@ public class GameEngine {
         Vector2 shootingVector = new Vector2();
         shootingVector.x = x - cannonPosition.x;
         shootingVector.y = y - cannonPosition.y;
-        shootingVector.setLength(4000.f);//400
+        shootingVector.setLength(1000.f);//400
 
         body.applyLinearImpulse(shootingVector, cannonPosition, true);
 
