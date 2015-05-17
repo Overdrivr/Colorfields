@@ -58,12 +58,6 @@ public class SphereOre extends Actor{
             bodyDef.type = BodyDef.BodyType.DynamicBody;
             bodyDef.position.set(position);
 
-
-            /*CircleShape shape = new CircleShape();
-            shape.setRadius(50.f);*/
-
-
-
             // Create a fixture definition to apply our shape to
             FixtureDef fixtureDef = new FixtureDef();
             fixtureDef.density = 0.5f;
@@ -91,22 +85,12 @@ public class SphereOre extends Actor{
             fixtureDef.shape = shape;
             body.createFixture(fixtureDef);
 
-
             g.stage.addActor(this);
-
-
-
-            purplecross = new Image(new TextureRegion(new Texture(Gdx.files.internal("TestAssets/purplecross.png"))));
-            g.stage.addActor(purplecross);
 
             //Intermediate node that will handle rotation around physical body
             root = new Group();
             root.setTransform(true);
             g.stage.addActor(root);
-
-            //Center of group
-            redcross = new Image(new TextureRegion(new Texture(Gdx.files.internal("TestAssets/redcross.png"))));
-            root.addActor(redcross);
 
             //Asset attached to group
             Texture t1 = new Texture(Gdx.files.internal(filename));
@@ -124,7 +108,5 @@ public class SphereOre extends Actor{
         root.setPosition(body.getPosition().x,body.getPosition().y);
         root.setRotation((float) (Math.toDegrees(body.getAngle())));
         root.draw(batch, parentAlpha);
-        purplecross.setPosition(body.getPosition().x, body.getPosition().y);
-        redcross.setPosition(asset.getX(), asset.getY());
     }
 }
