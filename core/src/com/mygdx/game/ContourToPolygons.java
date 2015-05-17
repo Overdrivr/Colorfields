@@ -29,10 +29,6 @@ public class ContourToPolygons{
             Array<Vector2> vec = result.get(i);
             Vector2[] verticesVec = vec.toArray(Vector2.class);
 
-            Gdx.app.log("------ ", i+"");
-            for (int j = 0 ; j < vec.size ; j++)
-                Gdx.app.log("T"+i+" : "+j+"", vec.get(j).x + " " + vec.get(j).y);
-
             polyShape = new PolygonShape();
             polyShape.set(verticesVec);
             fixtureDef.shape = polyShape;
