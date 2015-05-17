@@ -3,8 +3,11 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -37,6 +40,8 @@ public class GameEngine {
     b2Separator splitter;
     ContourToPolygons triangulator;
 
+    GravityField field;
+
     //Image processing
     PNGtoBox2D converter;
 
@@ -47,30 +52,42 @@ public class GameEngine {
     public Array<MassiveAsteroid> massiveAsteroids;
     public Array<SphereOre> ores;
 
+    //debug objects
+    ShapeRenderer renderer;
+
     public GameEngine(final Stage s){
         stage = s;
+
         //Init tools
         converter = new PNGtoBox2D();
         splitter = new b2Separator();
         triangulator = new ContourToPolygons();
-        //
         assetManager = new AssetManager();
-        // Init physics
+        renderer = new ShapeRenderer();
+
         initPhysics();
 
-        // Init level
+        initLevel();
+    }
+
+    private void initLevel(){
+        // Grid
+        field = new GravityField(new Vector2(-500,-500),50,20.f);
+
+        // Massive asteroids
         massiveAsteroids = new Array<MassiveAsteroid>();
         massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A1_red.png",new Vector2(-250.f,0.f),3.f));
-       // massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_1_contours.png",new Vector2(-750.f,100.f),3.f));
-       // massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_2_contours.png",new Vector2(-500.f,350.f),3.f));
+        // massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_1_contours.png",new Vector2(-750.f,100.f),3.f));
+        // massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_2_contours.png",new Vector2(-500.f,350.f),3.f));
         //massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_3.png",new Vector2(0.f,700.f),1.f));
         //massiveAsteroids.add(new MassiveAsteroid(this,"TestAssets/test_asset_4.png",new Vector2(0.f,400.f),1.f));
         massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A2_orange.png",new Vector2(-850.f,150.f),3.f));
 
+        // Small asteroids
         ores = new Array<SphereOre>();
         ores.add(new SphereOre(this,"TestAssets/doublesquare.png",new Vector2(-100.f,-60.f)));
-        ores.add(new SphereOre(this,"TestAssets/doublesquare.png",new Vector2(-200.f,-30.f)));
-        ores.add(new SphereOre(this,"TestAssets/doublesquare.png",new Vector2(-300.f,60.f)));
+        ores.add(new SphereOre(this, "TestAssets/doublesquare.png", new Vector2(-200.f, -30.f)));
+        ores.add(new SphereOre(this, "TestAssets/doublesquare.png", new Vector2(-300.f, 60.f)));
     }
 
     public void doPhysicsStep(float deltaTime) {
@@ -184,7 +201,7 @@ public class GameEngine {
         shootingVector.y = y - cannonPosition.y;
         shootingVector.setLength(4000.f);//400
 
-        body.applyLinearImpulse(shootingVector,cannonPosition,true);
+        body.applyLinearImpulse(shootingVector, cannonPosition, true);
 
         circle.dispose();
     }
@@ -196,11 +213,11 @@ public class GameEngine {
         v.add(new Vector2(180,170));
         v.add(new Vector2(190,130));
         v.add(new Vector2(220,120));
-        v.add(new Vector2(220,90));
+        v.add(new Vector2(220, 90));
         v.add(new Vector2(210,70));
         v.add(new Vector2(230,40));
         v.add(new Vector2(270,90));
-        v.add(new Vector2(250,140));
+        v.add(new Vector2(250, 140));
         v.add(new Vector2(260,160));
 
         //Create body
@@ -222,6 +239,28 @@ public class GameEngine {
 
         Vector2[] z = v.toArray(Vector2.class);
         //splitter.separate(body,fixtureDef,z);
-        triangulator.BuildShape(body,fixtureDef,v);
+        triangulator.BuildShape(body, fixtureDef, v);
+    }
+
+    public void debugDraw(Matrix4 combined){
+        renderer.setProjectionMatrix(combined);
+        renderer.begin(ShapeRenderer.ShapeType.Line);
+
+        field.debug_draw(renderer,combined);
+        //Draw XY reference
+        float x1 = 0;
+        float x2 = 10;
+        float y1 = 0;
+        float y2 = 0;
+        renderer.setColor(1,0,0,1);
+        renderer.line(x1, y1, x2, y2);
+        x1 = 0;
+        x2 = 0;
+        y1 = 0;
+        y2 = 10;
+        renderer.setColor(0,1,0,1);
+        renderer.line(x1, y1, x2, y2);
+
+        renderer.end();
     }
 }
