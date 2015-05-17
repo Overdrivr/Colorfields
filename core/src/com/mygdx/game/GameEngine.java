@@ -68,7 +68,9 @@ public class GameEngine {
         massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A2_orange.png",new Vector2(-850.f,150.f),3.f));
 
         ores = new Array<SphereOre>();
-        ores.add(new SphereOre(this,"TestAssets/doublesquare.png",new Vector2(-700.f,60.f)));
+        ores.add(new SphereOre(this,"TestAssets/doublesquare.png",new Vector2(-100.f,-60.f)));
+        ores.add(new SphereOre(this,"TestAssets/doublesquare.png",new Vector2(-200.f,-30.f)));
+        ores.add(new SphereOre(this,"TestAssets/doublesquare.png",new Vector2(-300.f,60.f)));
     }
 
     public void doPhysicsStep(float deltaTime) {
