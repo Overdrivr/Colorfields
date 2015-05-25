@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -31,6 +32,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.I18NBundle;
@@ -41,6 +43,8 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Vector;
+
+import sun.swing.CachedPainter;
 
 /**
  * Created by Bart on 26/04/2015.
@@ -92,10 +96,18 @@ public class GameScreen implements Screen {
         Locale locale = new Locale("en", "GB");
         myBundle = I18NBundle.createBundle(baseFileHandle, locale);
 
-        //INPUT HANDLING
+        // UI
         MyGestureListener gestureListener = new MyGestureListener();
         gestureListener.setGamescreen(this);
-        Gdx.input.setInputProcessor(new GestureDetector(gestureListener));
+
+        Touchpad touchpad = new Touchpad(0.f,skin);
+        touchpad.setPosition(-1000.f,-1000.f);
+        stage.addActor(touchpad);
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(new GestureDetector(gestureListener));
+        Gdx.input.setInputProcessor(multiplexer);
 
         //PARTICLE EFFECTS
         effect = new ParticleEffect();
@@ -104,7 +116,6 @@ public class GameScreen implements Screen {
         effect.findEmitter("Fire").setContinuous(true);
         effect.start();
 
-        //UI Init
         shapeRenderer = new ShapeRenderer();
         //Gdx.input.setInputProcessor(stage);
 
@@ -275,6 +286,16 @@ public class GameScreen implements Screen {
         Slider.SliderStyle sliderstyle = new Slider.SliderStyle();
         sliderstyle.background = skin.newDrawable("white",Color.OLIVE);
         skin.add("default-horizontal",sliderstyle);
+
+        //TOUCHPAD SKIN
+        Touchpad.TouchpadStyle touchpadStyle = new Touchpad.TouchpadStyle();
+        skin.add("touchpad_background",new Texture(Gdx.files.internal("UI/touchpad_background.png")));
+        skin.add("touchpad_knob",new Texture(Gdx.files.internal("UI/touchpad_knob.png")));
+        touchpadStyle.background = skin.getDrawable("touchpad_background");
+        touchpadStyle.knob = skin.getDrawable("touchpad_knob");
+        skin.add("default",touchpadStyle);
+
+
     }
 
     private void testaera(){
