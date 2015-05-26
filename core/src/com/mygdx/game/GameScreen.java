@@ -30,6 +30,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
@@ -64,6 +65,8 @@ public class GameScreen implements Screen {
     public I18NBundle myBundle;
 
     Stage stage;
+    Stage hudStage;
+    Table table;
     Skin skin;
 
     // For debug drawing
@@ -97,14 +100,29 @@ public class GameScreen implements Screen {
         myBundle = I18NBundle.createBundle(baseFileHandle, locale);
 
         // UI
+        hudStage = new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()),g.batch);
+        table = new Table(skin);
+        table.setFillParent(true);
+        //table.debug();
+        hudStage.addActor(table);
+
+        table.top();
+        Label scorelabel = new Label(myBundle.get("score"),skin);
+        table.add(scorelabel).expandX();
+
+        Label score = new Label("0",skin);
+        table.add(score).expandX();
+
+        table.row();
+        Touchpad touchpad = new Touchpad(0.f,skin);
+        table.add(touchpad).expandY().bottom().left();
+
+        // Event management
         MyGestureListener gestureListener = new MyGestureListener();
         gestureListener.setGamescreen(this);
 
-        Touchpad touchpad = new Touchpad(0.f,skin);
-        touchpad.setPosition(-1000.f,-1000.f);
-        stage.addActor(touchpad);
-
         InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(hudStage);
         multiplexer.addProcessor(stage);
         multiplexer.addProcessor(new GestureDetector(gestureListener));
         Gdx.input.setInputProcessor(multiplexer);
@@ -117,17 +135,10 @@ public class GameScreen implements Screen {
         effect.start();
 
         shapeRenderer = new ShapeRenderer();
-        //Gdx.input.setInputProcessor(stage);
 
         //Debug rendering
         debugRenderer = new Box2DDebugRenderer();
         debugRenderer.setDrawVelocities(true);
-        //debugRenderer.setDrawAABBs(true);
-
-
-        Texture debug_grid = new Texture(Gdx.files.internal("TestAssets/grid.png"));
-        Image testasset = new Image(debug_grid);
-        //stage.addActor(testasset);
     }
 
 
@@ -151,12 +162,17 @@ public class GameScreen implements Screen {
         stage.draw();
 
         debugRenderer.render(engine.world, stage.getViewport().getCamera().combined);
+
+        hudStage.act(delta);
+        hudStage.draw();
+
         engine.doPhysicsStep(delta);
     }
 
     @Override
     public void resize(int x, int y){
         stage.getViewport().update(x, y, false);
+        hudStage.getViewport().update(x,y,false);
     }
 
     @Override
@@ -182,6 +198,7 @@ public class GameScreen implements Screen {
     @Override
     public void dispose(){
         stage.dispose();
+        hudStage.dispose();
         shapeRenderer.dispose();
     }
 
