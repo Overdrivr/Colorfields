@@ -177,9 +177,9 @@ public class GameEngine {
         Fixture fixture = body.createFixture(fixtureDef);
 
         // Compute shooting vector
-        Vector2 shootingVector = new Vector2();
-        shootingVector.x = x - cannonPosition.x;
-        shootingVector.y = y - cannonPosition.y;
+        Vector2 shootingVector = new Vector2(x,y);
+        //shootingVector.x = x - cannonPosition.x;
+        //shootingVector.y = y - cannonPosition.y;
         shootingVector.setLength(1000.f);
 
         body.applyLinearImpulse(shootingVector, cannonPosition, true);
