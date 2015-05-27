@@ -24,8 +24,10 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -34,11 +36,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.I18NBundle;
 import com.badlogic.gdx.utils.viewport.FillViewport;
-
 
 import java.util.Iterator;
 import java.util.Locale;
@@ -101,6 +103,9 @@ public class GameScreen implements Screen {
 
         // UI
         hudStage = new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()),g.batch);
+        //Compute padding
+        float padding = Gdx.graphics.getHeight()/20;
+        Gdx.app.log("PADDING",Float.toString(padding));
         table = new Table(skin);
         table.setFillParent(true);
         //table.debug();
@@ -114,8 +119,22 @@ public class GameScreen implements Screen {
         table.add(score).expandX();
 
         table.row();
-        Touchpad touchpad = new Touchpad(0.f,skin);
-        table.add(touchpad).expandY().bottom().left();
+
+        ImageButton button = new ImageButton(skin);
+        table.add(button).expandY().bottom().left().pad(padding);
+
+        final Touchpad touchpad = new Touchpad(0.f,skin);
+        table.add(touchpad).expandY().bottom().right().pad(padding);
+
+        // Listeners
+        button.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y){
+                engine.createSphere(touchpad.getKnobPercentX(), touchpad.getKnobPercentY());
+            };
+
+        });
+
 
         // Event management
         MyGestureListener gestureListener = new MyGestureListener();
@@ -200,6 +219,10 @@ public class GameScreen implements Screen {
         stage.dispose();
         hudStage.dispose();
         shapeRenderer.dispose();
+    }
+
+    public void shoot(){
+
     }
 
     //EVENTS
@@ -312,6 +335,10 @@ public class GameScreen implements Screen {
         touchpadStyle.knob = skin.getDrawable("touchpad_knob");
         skin.add("default",touchpadStyle);
 
+        //IMAGE BUTTON SKIN
+        ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle();
+        imageButtonStyle.imageUp = skin.getDrawable("touchpad_background");
+        skin.add("default",imageButtonStyle);
 
     }
 
