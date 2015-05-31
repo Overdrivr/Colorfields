@@ -29,6 +29,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
@@ -70,6 +71,7 @@ public class GameScreen implements Screen {
     Stage hudStage;
     Table table;
     Skin skin;
+    ProgressBar bar;
 
     // For debug drawing
     private ShapeRenderer shapeRenderer;
@@ -78,9 +80,6 @@ public class GameScreen implements Screen {
     public GameEngine engine;
 
     public GameScreen(final MyGdxGame g) {
-
-        //To test specific portions of code
-        //testaera();
 
         game = g;
         initSkin();
@@ -115,35 +114,24 @@ public class GameScreen implements Screen {
         Label scorelabel = new Label(myBundle.get("score"),skin);
         table.add(scorelabel).expandX();
 
+        bar = new ProgressBar(0,500,0.1f,false,skin);
+        bar.setValue(0);
+        table.add(bar).expandX();
+
         Label score = new Label("0",skin);
         table.add(score).expandX();
-
-        table.row();
-
-        ImageButton button = new ImageButton(skin);
-        table.add(button).expandY().bottom().left().pad(padding);
-
-        final Touchpad touchpad = new Touchpad(0.f,skin);
-        table.add(touchpad).expandY().bottom().right().pad(padding);
-
-        // Listeners
-        button.addListener(new ClickListener(){
-            @Override
-            public void clicked(InputEvent event, float x, float y){
-                engine.createSphere(touchpad.getKnobPercentX(), touchpad.getKnobPercentY());
-            };
-
-        });
-
 
         // Event management
         MyGestureListener gestureListener = new MyGestureListener();
         gestureListener.setGamescreen(this);
 
+        MyGestureDetector detector = new MyGestureDetector(gestureListener,this);
+        detector.setLongPressSeconds(0.4f);
+
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(hudStage);
         multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(new MyGestureDetector(gestureListener));
+        multiplexer.addProcessor(detector);
         Gdx.input.setInputProcessor(multiplexer);
 
         //PARTICLE EFFECTS
@@ -186,6 +174,11 @@ public class GameScreen implements Screen {
         hudStage.draw();
 
         engine.doPhysicsStep(delta);
+
+        float v = bar.getValue() + 0.1f;
+        if(v > 100.f)
+            v-= 100.f;
+        bar.setValue(v);
     }
 
     @Override
@@ -221,8 +214,12 @@ public class GameScreen implements Screen {
         shapeRenderer.dispose();
     }
 
-    public void shoot(){
+    public void ShootLoadingStart(){
+    }
 
+    public void ShootLoadingEnd(float x, float y){
+        Vector2 w = stage.getViewport().unproject(new Vector2(x, y));
+        engine.createSphere(w.x, w.y);
     }
 
     //EVENTS
@@ -231,13 +228,11 @@ public class GameScreen implements Screen {
         initial_zoom = ((OrthographicCamera)this.stage.getCamera()).zoom;
         cameraSpeed.x = 0;
         cameraSpeed.y = 0;
-        //Gdx.app.log("TAP","Initial ("+Float.toString(initial_zoom)+")");
     }
+
+
     public void Tap(float x, float y){
-        Vector2 w = stage.getViewport().unproject(new Vector2(x, y));
-        engine.createSphere(w.x, w.y);
-        //Gdx.app.log("TAP","Screen ("+Float.toString(x)+","+Float.toString(y)+")");
-        //Gdx.app.log("TAP", "World (" + Float.toString(w.x) + "," + Float.toString(w.y) + ")");
+
     }
 
     public void Pan(Vector2 start, Vector2 end)
@@ -251,8 +246,6 @@ public class GameScreen implements Screen {
         Vector2 diff = start_world.mulAdd(end_world,-1);
 
         stage.getCamera().translate(diff.x,diff.y,0.f);
-
-        //Gdx.app.log("PAN", "World (" + Float.toString(diff.x)+","+Float.toString(diff.y) + ")");
     }
 
     public void Fling(float velocityX, float velocityY){
@@ -264,10 +257,6 @@ public class GameScreen implements Screen {
 
         cameraSpeed.x = diff.x;
         cameraSpeed.y = diff.y;
-
-        //Gdx.app.log("FLING", "Elasticity (" + Float.toString(cameraSpeed.x) + "," +
-        //                                      Float.toString(cameraSpeed.y) + ")");
-
     }
 
     public void Zoom(float originalDistance,float currentDistance)
@@ -275,8 +264,6 @@ public class GameScreen implements Screen {
         float ratio = originalDistance / currentDistance;
         float final_zoom = MathUtils.clamp(initial_zoom * ratio, 0.3f, 10.0f);
         ((OrthographicCamera)this.stage.getCamera()).zoom = final_zoom;
-
-        //Gdx.app.log("Zoom", "Final Distance (" + Float.toString(final_zoom) + ")");
     }
 
     private void initSkin(){
@@ -287,12 +274,6 @@ public class GameScreen implements Screen {
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
         skin.add("white", new Texture(pixmap));
-        //dispose pixmap ?
-
-        /*Pixmap p2 = new Pixmap(5, 50, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.GREEN);
-        pixmap.fill();
-        skin.add("cursor", new Texture(pixmap));*/
 
         skin.add("default",game.font);
 
@@ -340,6 +321,11 @@ public class GameScreen implements Screen {
         imageButtonStyle.imageUp = skin.getDrawable("touchpad_background");
         skin.add("default",imageButtonStyle);
 
+        //PROGRESS BAR SKIN
+        ProgressBar.ProgressBarStyle barStyle = new ProgressBar.ProgressBarStyle();
+        skin.add("progressbar_background",new Texture(Gdx.files.internal("UI/loadbar.png")));
+        barStyle.background = skin.getDrawable("progressbar_background");
+        skin.add("default-horizontal",barStyle);
     }
 
     private void testaera(){

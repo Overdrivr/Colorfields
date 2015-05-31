@@ -23,13 +23,13 @@ public class MyGestureListener implements GestureDetector.GestureListener {
     @Override
     public boolean tap(float x, float y, int count, int button) {
         gamescreen.Tap(x,y);
-        return false;
+        return true;
     }
 
     @Override
     public boolean longPress(float x, float y) {
-
-        return false;
+        gamescreen.ShootLoadingEnd(x,y);
+        return true;
     }
 
     @Override
