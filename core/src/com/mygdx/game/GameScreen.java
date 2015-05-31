@@ -143,7 +143,7 @@ public class GameScreen implements Screen {
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(hudStage);
         multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(new GestureDetector(gestureListener));
+        multiplexer.addProcessor(new MyGestureDetector(gestureListener));
         Gdx.input.setInputProcessor(multiplexer);
 
         //PARTICLE EFFECTS
