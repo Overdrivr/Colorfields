@@ -175,10 +175,11 @@ public class GameScreen implements Screen {
 
         engine.doPhysicsStep(delta);
 
-        float v = bar.getValue() + 0.1f;
-        if(v > 100.f)
-            v-= 100.f;
+        float v = bar.getValue() + 5;
+        if(v > 500.f)
+            v = 0.f;
         bar.setValue(v);
+        //Gdx.app.log("Bar",Float.toString(bar.getValue()));
     }
 
     @Override
@@ -214,12 +215,13 @@ public class GameScreen implements Screen {
         shapeRenderer.dispose();
     }
 
-    public void ShootLoadingStart(){
+    public void touchUpAction(float x, float y){
+        engine.endCharge(x,y);
     }
 
-    public void ShootLoadingEnd(float x, float y){
+    public void longPressAction(float x, float y){
         Vector2 w = stage.getViewport().unproject(new Vector2(x, y));
-        engine.createSphere(w.x, w.y);
+        engine.startCharge();
     }
 
     //EVENTS
@@ -228,6 +230,7 @@ public class GameScreen implements Screen {
         initial_zoom = ((OrthographicCamera)this.stage.getCamera()).zoom;
         cameraSpeed.x = 0;
         cameraSpeed.y = 0;
+        engine.cancelCharge();
     }
 
 

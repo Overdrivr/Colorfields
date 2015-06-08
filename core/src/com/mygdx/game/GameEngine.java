@@ -20,6 +20,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -51,6 +52,10 @@ public class GameEngine {
     Stage stage;
     public Array<MassiveAsteroid> massiveAsteroids;
     public Array<SphereOre> ores;
+    boolean shootingInPreparation;
+
+    TimeUtils chrono;
+    long startingTime;
 
     //debug objects
     ShapeRenderer renderer;
@@ -111,6 +116,10 @@ public class GameEngine {
         ores.add(new SphereOre(this,"TestAssets/doublesquare.png",new Vector2(-100.f,-60.f)));
         ores.add(new SphereOre(this, "TestAssets/doublesquare.png", new Vector2(-200.f, -30.f)));
         ores.add(new SphereOre(this, "TestAssets/doublesquare.png", new Vector2(-300.f, 60.f)));
+
+        shootingInPreparation = false;
+
+        chrono = new TimeUtils();
     }
 
     public void doPhysicsStep(float deltaTime) {
@@ -153,7 +162,7 @@ public class GameEngine {
         groundBox.dispose();
     }
 
-    public void createSphere(float x, float y)
+    public void createSphere(float x, float y, float force)
     {
         // Create a new ore to throw from starting point
 
@@ -180,11 +189,35 @@ public class GameEngine {
         Vector2 shootingVector = new Vector2();
         shootingVector.x = x - cannonPosition.x;
         shootingVector.y = y - cannonPosition.y;
-        shootingVector.setLength(1000.f);
+        shootingVector.setLength(force);
 
         body.applyLinearImpulse(shootingVector, cannonPosition, true);
 
         circle.dispose();
+    }
+
+    public void startCharge(){
+        shootingInPreparation = true;
+        startingTime = chrono.millis();
+    }
+
+    public void endCharge(float x, float y){
+        if(shootingInPreparation){
+            long elapsedTime = chrono.timeSinceMillis(startingTime);
+
+            /*if(elapsedTime > 3000)
+                elapsedTime = 3000;*/
+
+            float force = (float)(elapsedTime);
+
+            createSphere(x,y,elapsedTime);
+            shootingInPreparation = false;
+        }
+
+    }
+
+    public void cancelCharge(){
+        shootingInPreparation = false;
     }
 
     private void testarea(){

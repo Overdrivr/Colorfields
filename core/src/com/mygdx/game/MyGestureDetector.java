@@ -15,6 +15,7 @@ public class MyGestureDetector extends GestureDetector {
 
     @Override
     public boolean touchUp(float x, float y, int pointer, int button){
+        myScreen.touchUpAction(x,y);
         return super.touchUp(x, y, pointer, button);
     }
 

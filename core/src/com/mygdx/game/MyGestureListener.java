@@ -28,7 +28,7 @@ public class MyGestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean longPress(float x, float y) {
-        gamescreen.ShootLoadingEnd(x,y);
+        gamescreen.longPressAction(x,y);
         return true;
     }
 
