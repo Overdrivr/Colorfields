@@ -205,12 +205,11 @@ public class GameEngine {
         if(shootingInPreparation){
             long elapsedTime = chrono.timeSinceMillis(startingTime);
 
-            /*if(elapsedTime > 3000)
-                elapsedTime = 3000;*/
+            if(elapsedTime > 3000)
+                elapsedTime = 3000;
 
-            float force = (float)(elapsedTime);
-
-            createSphere(x,y,elapsedTime);
+            Gdx.app.log("Vector",Float.toString(x)+";"+Float.toString(y));
+            createSphere(x, y, elapsedTime);
             shootingInPreparation = false;
         }
 
@@ -220,7 +219,19 @@ public class GameEngine {
         shootingInPreparation = false;
     }
 
-    private void testarea(){
+    public float getChargePercent(){
+        if(shootingInPreparation){
+            long elapsedTime = chrono.timeSinceMillis(startingTime);
+            float percent = elapsedTime / 3000.f * 100.f;
+            if(percent > 100.f)
+                percent = 100.f;
+            return percent;
+        }
+        else
+            return 0;
+    }
+
+    /*private void testarea(){
         //Define a concave shape
         Array<Vector2> v = new Array<Vector2>();
         v.add(new Vector2(200,200));
@@ -255,7 +266,7 @@ public class GameEngine {
         //splitter.separate(body,fixtureDef,z);
         triangulator.BuildShape(body, fixtureDef, v);
     }
-
+*/
     public void debugDraw(Matrix4 combined){
         renderer.setProjectionMatrix(combined);
         renderer.begin(ShapeRenderer.ShapeType.Line);

@@ -114,9 +114,10 @@ public class GameScreen implements Screen {
         Label scorelabel = new Label(myBundle.get("score"),skin);
         table.add(scorelabel).expandX();
 
-        bar = new ProgressBar(0,500,0.1f,false,skin);
+        bar = new ProgressBar(0,100,1,false,skin);
         bar.setValue(0);
-        table.add(bar).expandX();
+        bar.setSize(bar.getPrefWidth()*5,bar.getPrefHeight());
+        table.add(bar);
 
         Label score = new Label("0",skin);
         table.add(score).expandX();
@@ -148,8 +149,6 @@ public class GameScreen implements Screen {
         debugRenderer.setDrawVelocities(true);
     }
 
-
-
     @Override
     public void render(float delta) {
 
@@ -175,12 +174,21 @@ public class GameScreen implements Screen {
 
         engine.doPhysicsStep(delta);
 
-        float v = bar.getValue() + 5;
-        if(v > 500.f)
-            v = 0.f;
-        bar.setValue(v);
-        //Gdx.app.log("Bar",Float.toString(bar.getValue()));
+
+        float force = engine.getChargePercent();
+        bar.setValue(force);
     }
+
+    public Vector2 screenVectorToWorld(Vector2 velocity){
+        Vector2 start = stage.getViewport().unproject(new Vector2(0,0));
+        Vector2 end = stage.getViewport().unproject(velocity);
+
+        // Compute speed in world coordinates to account for zoom levels
+        Vector2 diff = start.mulAdd(end, -1);
+
+        return diff;
+    }
+
 
     @Override
     public void resize(int x, int y){
@@ -216,7 +224,8 @@ public class GameScreen implements Screen {
     }
 
     public void touchUpAction(float x, float y){
-        engine.endCharge(x,y);
+        Vector2 v = stage.getViewport().unproject(new Vector2(x,y));
+        engine.endCharge(v.x,v.y);
     }
 
     public void longPressAction(float x, float y){
@@ -326,8 +335,10 @@ public class GameScreen implements Screen {
 
         //PROGRESS BAR SKIN
         ProgressBar.ProgressBarStyle barStyle = new ProgressBar.ProgressBarStyle();
-        skin.add("progressbar_background",new Texture(Gdx.files.internal("UI/loadbar.png")));
+        skin.add("progressbar_background",new Texture(Gdx.files.internal("UI/loadbar_background.png")));
+        skin.add("progressbar_knob",new Texture(Gdx.files.internal("UI/loadbar_knob.png")));
         barStyle.background = skin.getDrawable("progressbar_background");
+        barStyle.knob = skin.getDrawable("progressbar_knob");
         skin.add("default-horizontal",barStyle);
     }
 
