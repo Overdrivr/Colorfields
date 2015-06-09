@@ -18,12 +18,16 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
+import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Vector;
 
 /**
@@ -35,7 +39,6 @@ public class GameEngine {
     public World world;
     private float accumulator = 0;
     private Vector<Body> spheres;
-    //Vector2 sunPosition;
     Vector2 cannonPosition;
 
     b2Separator splitter;
@@ -57,6 +60,8 @@ public class GameEngine {
     TimeUtils chrono;
     long startingTime;
 
+    Random rnd;
+
     //debug objects
     ShapeRenderer renderer;
 
@@ -76,7 +81,7 @@ public class GameEngine {
         triangulator = new ContourToPolygons();
         assetManager = new AssetManager();
         renderer = new ShapeRenderer();
-
+        rnd = new Random();
         initLevel();
     }
 
@@ -162,36 +167,57 @@ public class GameEngine {
         groundBox.dispose();
     }
 
-    public void createSphere(float x, float y, float force)
-    {
-        // Create a new ore to throw from starting point
+    public void createConvoy(float x, float y, float force) {
+        // Create a new convoy to throw from cannonPosition to (x,y)
+        // Amount of spheres (+1 for the initial sphere)
+        int amount = rnd.nextInt(10);
+        float jointDistance = 20;
 
+        // Compute direction vector of the convoy
+        Vector2 directionVector = new Vector2();
+        directionVector.x = x - cannonPosition.x;
+        directionVector.y = y - cannonPosition.y;
+        directionVector.setLength(jointDistance);
+
+        // Compute force vector
+        Vector2 forceVector = new Vector2(directionVector);
+        forceVector.setLength(force);
+
+        //First sphere
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(cannonPosition);
-
         Body body = world.createBody(bodyDef);
 
         CircleShape circle = new CircleShape();
         circle.setRadius(2.5f);
-
-        spheres.add(body);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = circle;
         fixtureDef.density = 0.5f;
         fixtureDef.friction = 5.0f;
         fixtureDef.restitution = 0.6f;
+        body.createFixture(fixtureDef);
+        body.applyLinearImpulse(forceVector, cannonPosition, true);
 
-        Fixture fixture = body.createFixture(fixtureDef);
+        spheres.add(body);
 
-        // Compute shooting vector
-        Vector2 shootingVector = new Vector2();
-        shootingVector.x = x - cannonPosition.x;
-        shootingVector.y = y - cannonPosition.y;
-        shootingVector.setLength(force);
+        //All following spheres
+        for(int i = 0 ; i < amount ; i++){
+            bodyDef.position.set(cannonPosition.x - directionVector.x * (i+1), cannonPosition.y - directionVector.y * (i+1));
+            Body body2 = world.createBody(bodyDef);
+            body2.createFixture(fixtureDef);
 
-        body.applyLinearImpulse(shootingVector, cannonPosition, true);
+            //Joint
+            DistanceJointDef jointDef = new DistanceJointDef();
+            jointDef.frequencyHz = 1.5f;
+            jointDef.initialize(spheres.lastElement(), body2, spheres.lastElement().getPosition(), body2.getPosition());
+            world.createJoint(jointDef);
+
+            body2.applyLinearImpulse(forceVector, body2.getPosition(), true);
+
+            spheres.add(body2);
+        }
 
         circle.dispose();
     }
@@ -209,7 +235,7 @@ public class GameEngine {
                 elapsedTime = 3000;
 
             Gdx.app.log("Vector",Float.toString(x)+";"+Float.toString(y));
-            createSphere(x, y, elapsedTime);
+            createConvoy(x, y, elapsedTime);
             shootingInPreparation = false;
         }
 
