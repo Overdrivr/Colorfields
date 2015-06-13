@@ -49,12 +49,16 @@ public class GravityField {
                 // Compute length
                 float r = localpoint.len();
                 // Gravitationnal constant * mass1 * mass2
-                float Gm1m2 = 1000.f;
+                float Gm1m2 = 0.005f;
 
                 if(r < 0.00001f)
                     localpoint.setLength(0.f);
-                else
-                    localpoint.setLength(Gm1m2/r);
+                else {
+                    float length = Gm1m2 / (r * r);
+                    if (length > 0.1f)
+                        length = 0.1f;
+                    localpoint.setLength(length);
+                }
 
                 forces[x][y].x += localpoint.x;
                 forces[x][y].y += localpoint.y;
@@ -94,8 +98,6 @@ public class GravityField {
                    forces[x0][y0+1].y   * d10 +
                    forces[x0+1][y0+1].y * d10)/(d00 + d10 + d01 + d11);
 
-        force.x *= 50.f;
-        force.y *= 50.f;
         // Utiliser couleur de l'objet et couleur actuelle pour obtenir force finale
         // todo
 
@@ -129,8 +131,8 @@ public class GravityField {
                 for(int y = 0 ; y < cellamount ; y++) {
                 float x1 = x * unitsize + gridcenter.x;
                 float y1 = y * unitsize + gridcenter.y;
-                float x2 = x1 + forces[x][y].x;
-                float y2 = y1 + forces[x][y].y;
+                float x2 = x1 + forces[x][y].x*10;
+                float y2 = y1 + forces[x][y].y*10;
                 renderer.line(x1,y1,x2,y2);
             }
         }

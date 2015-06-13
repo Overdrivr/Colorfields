@@ -70,17 +70,17 @@ public class SphereOre extends Actor{
             PolygonShape shape = new PolygonShape();
             Vector2[] vec = new Vector2[4];
             vec[0] = new Vector2(0,0);
-            vec[1] = new Vector2(30,0);
-            vec[2] = new Vector2(30,30);
-            vec[3] = new Vector2(0,30);
+            vec[1] = new Vector2(0.3f,0);
+            vec[2] = new Vector2(0.3f,0.3f);
+            vec[3] = new Vector2(0,0.3f);
             shape.set(vec);
             fixtureDef.shape = shape;
             body.createFixture(fixtureDef);
 
-            vec[0] = new Vector2(30,0);
-            vec[1] = new Vector2(50,0);
-            vec[2] = new Vector2(50,20);
-            vec[3] = new Vector2(30,20);
+            vec[0] = new Vector2(0.3f,0);
+            vec[1] = new Vector2(0.5f,0);
+            vec[2] = new Vector2(0.5f,0.2f);
+            vec[3] = new Vector2(0.3f,0.2f);
             shape.set(vec);
             fixtureDef.shape = shape;
             body.createFixture(fixtureDef);
@@ -97,6 +97,7 @@ public class SphereOre extends Actor{
             TextureRegion t = new TextureRegion(t1);
             t.flip(false,true);
             asset = new Image(t);
+            asset.setScale(0.01f);
             //asset.setPosition(0,0,0);
             //Gdx.app.log("Asset size", Float.toString() + " " + Float.toString());
             root.addActor(asset);

@@ -72,6 +72,7 @@ public class GameScreen implements Screen {
     Table table;
     Skin skin;
     ProgressBar bar;
+    Label score;
 
     // For debug drawing
     private ShapeRenderer shapeRenderer;
@@ -89,6 +90,7 @@ public class GameScreen implements Screen {
         viewport = new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         stage = new Stage(viewport,g.batch);
         stage.getCamera().translate(-Gdx.graphics.getWidth()/2.f,-Gdx.graphics.getHeight()/2.f,0.f);
+        ((OrthographicCamera)this.stage.getCamera()).zoom = 0.005f;
         cameraSpeed = new Vector2(0,0);
 
         //Init game engine
@@ -103,6 +105,7 @@ public class GameScreen implements Screen {
         // UI
         hudStage = new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()),g.batch);
         //Compute padding
+        //TODO : to use
         float padding = Gdx.graphics.getHeight()/20;
         Gdx.app.log("PADDING",Float.toString(padding));
         table = new Table(skin);
@@ -116,10 +119,10 @@ public class GameScreen implements Screen {
 
         bar = new ProgressBar(0,100,1,false,skin);
         bar.setValue(0);
-        bar.setSize(bar.getPrefWidth()*5,bar.getPrefHeight());
+        bar.setSize(bar.getPrefWidth() * 5, bar.getPrefHeight());
         table.add(bar);
 
-        Label score = new Label("0",skin);
+        score = new Label("0",skin);
         table.add(score).expandX();
 
         // Event management
@@ -177,6 +180,8 @@ public class GameScreen implements Screen {
 
         float force = engine.getChargePercent();
         bar.setValue(force);
+
+        score.setText(Integer.toString(engine.getScore()));
     }
 
     public Vector2 screenVectorToWorld(Vector2 velocity){
@@ -225,7 +230,7 @@ public class GameScreen implements Screen {
 
     public void touchUpAction(float x, float y){
         Vector2 v = stage.getViewport().unproject(new Vector2(x,y));
-        engine.endCharge(v.x,v.y);
+        engine.endCharge(v.x, v.y);
     }
 
     public void longPressAction(float x, float y){
@@ -274,7 +279,7 @@ public class GameScreen implements Screen {
     public void Zoom(float originalDistance,float currentDistance)
     {
         float ratio = originalDistance / currentDistance;
-        float final_zoom = MathUtils.clamp(initial_zoom * ratio, 0.3f, 10.0f);
+        float final_zoom = MathUtils.clamp(initial_zoom * ratio, 0.001f, 0.02f);
         ((OrthographicCamera)this.stage.getCamera()).zoom = final_zoom;
     }
 
@@ -340,26 +345,5 @@ public class GameScreen implements Screen {
         barStyle.background = skin.getDrawable("progressbar_background");
         barStyle.knob = skin.getDrawable("progressbar_knob");
         skin.add("default-horizontal",barStyle);
-    }
-
-    private void testaera(){
-        Array<Vector2> l1 = new Array<Vector2>();
-
-        l1.add(new Vector2(0,3));
-        l1.add(new Vector2(1,6));
-        l1.add(new Vector2(2,25));
-        l1.add(new Vector2(3,19));
-        l1.add(new Vector2(4,16));
-        l1.add(new Vector2(5,12));
-        l1.add(new Vector2(6,4));
-        l1.add(new Vector2(7,6));
-
-        PNGtoBox2D converter = new PNGtoBox2D();
-        l1 = converter.RDP(l1,1.f);
-
-        Gdx.app.log("DEBUG","-----");
-        for(int i = 0 ; i < l1.size ; i++){
-            Gdx.app.log(Float.toString(l1.get(i).x),Float.toString(l1.get(i).y));
-        }
     }
 }

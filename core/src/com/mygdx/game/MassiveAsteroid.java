@@ -49,6 +49,7 @@ public class MassiveAsteroid extends Actor {
         textureRegion = new TextureRegion(texture);
         textureRegion.flip(false,true);
         image = new Image(textureRegion);
+        image.setScale(0.01f);
 
         // Attach the class to the stage
         g.stage.addActor(this);
@@ -56,10 +57,19 @@ public class MassiveAsteroid extends Actor {
         //Detect contour from pixmap
         Array<Vector2> raw_contour = g.converter.marchingSquares(pixmap);
 
+        for(int i = 0 ; i < raw_contour.size ; i++){
+            raw_contour.get(i).x *= 0.01f;
+            raw_contour.get(i).y *= 0.01f;
+        }
+
         // Simplify contour
         Array<Vector2> simplified_contour = g.converter.RDP(raw_contour, distance);
         // Reverse order so that points run clockwise
         simplified_contour.reverse();
+
+        for(int i = 0 ; i < simplified_contour.size ; i++){
+            Gdx.app.log("Pos",Float.toString(simplified_contour.get(i).x)+";"+Float.toString(simplified_contour.get(i).y));
+        }
 
         //Define body properties
         BodyDef bodyDef = new BodyDef();
