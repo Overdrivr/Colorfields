@@ -24,7 +24,7 @@ public class ContourToPolygons{
 
         triangulate();
 
-        for(int i = 0 ; i < result.size ; i++)
+        for(int i = 1 ; i < result.size ; i++)
         {
             Array<Vector2> vec = result.get(i);
             Vector2[] verticesVec = vec.toArray(Vector2.class);
