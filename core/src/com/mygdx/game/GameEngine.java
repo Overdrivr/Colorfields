@@ -2,18 +2,14 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
@@ -33,6 +29,8 @@ import java.util.Vector;
 /**
  * Created by Bart on 03/05/2015.
  */
+
+
 public class GameEngine {
 
     //PHYSICS
@@ -45,6 +43,7 @@ public class GameEngine {
     ContourToPolygons triangulator;
 
     GravityField field;
+    MyContactListener contactListener;
 
     //Image processing
     PNGtoBox2D converter;
@@ -87,7 +86,7 @@ public class GameEngine {
 
     private void initLevel(){
         // Level properties
-        worldSize = 5000.f;
+        worldSize = 3000.f;
         camerabound_plus_x = worldSize/2.f;
         camerabound_minus_x = -worldSize/2.f;
         camerabound_plus_y = worldSize/2.f;
@@ -96,16 +95,22 @@ public class GameEngine {
 
         // Init physics world
         world = new World(new Vector2(0.f,0.f),true);
+        contactListener = new MyContactListener();
+        world.setContactListener(contactListener);
 
         spheres = new Vector();
 
         createStartPoint(new Vector2(-400, 1));
+        createEndPoint(new Vector2(300, 400));
+
 
 
         // Grid
-        field = new GravityField(new Vector2(-500,-500),50,20.f);
-        field.addSphericalAttractor(new Vector2(-200,-200));
-        field.debugDrawGrid = false;
+        field = new GravityField(new Vector2(-worldSize/2,-worldSize/2),worldSize,100);
+        field.addSphericalAttractor(new Vector2(-200, -200));
+        field.debugDrawGrid = false; //TODO : Ne fonctionne pas ?
+
+        field.addSphericalAttractor(new Vector2(300,400));
 
         // Massive asteroids
         massiveAsteroids = new Array<MassiveAsteroid>();
@@ -138,6 +143,17 @@ public class GameEngine {
             updateFields();
             accumulator -= 1/45.f;
         }
+
+        /*int numContacts = world.getContactCount();
+        if (numContacts > 0) {
+            Gdx.app.log("contact", "start of contact list");
+            for (Contact contact : world.getContactList()) {
+                Fixture fixtureA = contact.getFixtureA();
+                Fixture fixtureB = contact.getFixtureB();
+                Gdx.app.log("contact", "between " + fixtureA.toString() + " and " + fixtureB.toString());
+            }
+            Gdx.app.log("contact", "end of contact list");
+        }*/
     }
 
     private void updateFields(){
@@ -162,7 +178,7 @@ public class GameEngine {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = groundBox;
         fixtureDef.isSensor = true;
-        groundBody.createFixture(fixtureDef);
+        Fixture f = groundBody.createFixture(fixtureDef);
 
         groundBox.dispose();
     }
@@ -171,6 +187,7 @@ public class GameEngine {
         // Create a new convoy to throw from cannonPosition to (x,y)
         // Amount of spheres (+1 for the initial sphere)
         int amount = rnd.nextInt(10);
+        amount = 0;
         float jointDistance = 20;
 
         // Compute direction vector of the convoy
@@ -189,6 +206,10 @@ public class GameEngine {
         bodyDef.position.set(cannonPosition);
         Body body = world.createBody(bodyDef);
 
+        MyBodyData data = new MyBodyData();
+        data.type = BodyType.BODY_TYPE_ORE;
+        body.setUserData(data);
+
         CircleShape circle = new CircleShape();
         circle.setRadius(2.5f);
 
@@ -206,7 +227,7 @@ public class GameEngine {
         for(int i = 0 ; i < amount ; i++){
             bodyDef.position.set(cannonPosition.x - directionVector.x * (i+1), cannonPosition.y - directionVector.y * (i+1));
             Body body2 = world.createBody(bodyDef);
-            body2.createFixture(fixtureDef);
+            Fixture f2 = body2.createFixture(fixtureDef);
 
             //Joint
             DistanceJointDef jointDef = new DistanceJointDef();
@@ -220,6 +241,30 @@ public class GameEngine {
         }
 
         circle.dispose();
+    }
+
+    private void createEndPoint(Vector2 position){
+        // Init the end point
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(position);
+
+        Body body = world.createBody(bodyDef);
+
+        MyBodyData data = new MyBodyData();
+        data.type = BodyType.BODY_TYPE_END;
+        body.setUserData(data);
+
+        CircleShape shape = new CircleShape();
+        shape.setRadius(50);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.isSensor = true;
+
+        Fixture f = body.createFixture(fixtureDef);
+
+        shape.dispose();
     }
 
     public void startCharge(){
