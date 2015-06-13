@@ -20,13 +20,21 @@ public class GravityField {
     // @center : center of the grid
     // @amount : amount of grid cells per side
     // @cellsize : size of the side of a cell
-    public GravityField(Vector2 center, int amount, float cellsize){
+    public GravityField(Vector2 center, float edgesize, int amount){
         forces = new Vector2[amount][amount];
-        unitsize = cellsize;
+        unitsize = edgesize/amount;
         gridcenter = center;
         cellamount = amount;
         debugDrawForces = true;
         debugDrawGrid = true;
+        clearField();
+    }
+
+    public void clearField(){
+        for(int x = 0 ; x < cellamount ; x++)
+            for(int y = 0 ; y < cellamount ; y++){
+                forces[x][y] = new Vector2(0,0);
+            }
     }
 
     public void addSphericalAttractor(Vector2 center){
@@ -48,7 +56,8 @@ public class GravityField {
                 else
                     localpoint.setLength(Gm1m2/r);
 
-                forces[x][y] = localpoint;
+                forces[x][y].x += localpoint.x;
+                forces[x][y].y += localpoint.y;
             }
     }
 
