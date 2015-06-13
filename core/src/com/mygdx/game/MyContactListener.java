@@ -13,6 +13,12 @@ import com.badlogic.gdx.physics.box2d.Manifold;
  */
 
 public class MyContactListener implements ContactListener {
+    private final GameEngine engine;
+    public MyContactListener(GameEngine e){
+        super();
+        engine = e;
+    }
+
     @Override
     public void endContact(Contact contact) {
         Body A = contact.getFixtureA().getBody();
@@ -31,9 +37,13 @@ public class MyContactListener implements ContactListener {
 
         if(dataA != null && dataB != null)
         {
-            if((dataA.type == BodyType.BODY_TYPE_ORE && dataB.type == BodyType.BODY_TYPE_END) ||
-               (dataB.type == BodyType.BODY_TYPE_ORE && dataA.type == BodyType.BODY_TYPE_END)){
-                Gdx.app.log("beginContact", "between " + A.toString() + " and " + B.toString());
+            if(dataA.type == BodyType.BODY_TYPE_ORE && dataB.type == BodyType.BODY_TYPE_END){
+                engine.oreReachedEndpoint(A);
+            }
+            if(dataB.type == BodyType.BODY_TYPE_ORE && dataA.type == BodyType.BODY_TYPE_END){
+                // An ore has reached the endpoint, tell the game engine
+                engine.oreReachedEndpoint(B);
+                //Gdx.app.log("beginContact", "between " + A.toString() + " and " + B.toString());
             }
         }
 
