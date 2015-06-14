@@ -35,7 +35,7 @@ public class GameEngine {
     //PHYSICS
     public World world;
     private float accumulator = 0;
-    private Vector<Body> spheres;
+    private Vector<Convoy> convoys;
     Vector2 cannonPosition;
 
     b2Separator splitter;
@@ -100,7 +100,7 @@ public class GameEngine {
         contactListener = new MyContactListener(this);
         world.setContactListener(contactListener);
 
-        spheres = new Vector();
+        convoys = new Vector();
 
         createStartPoint(new Vector2(-4, 0.01f));
         createEndPoint(new Vector2(3, 4));
@@ -157,9 +157,8 @@ public class GameEngine {
 
     private void updateFields(){
         //Update gravity forces
-        for(Body b : spheres){
-            Vector2 force = field.getForce(b.getPosition().x,b.getPosition().y);
-            b.applyForce(force,b.getPosition(),true);
+        for(Convoy c : convoys){
+            c.update(field);
         }
     }
 
@@ -198,47 +197,8 @@ public class GameEngine {
         Vector2 forceVector = new Vector2(directionVector);
         forceVector.setLength(force);
 
-        //First sphere
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(cannonPosition);
-        Body body = world.createBody(bodyDef);
-
-        MyBodyData data = new MyBodyData();
-        data.type = BodyType.BODY_TYPE_ORE;
-        body.setUserData(data);
-
-        CircleShape circle = new CircleShape();
-        circle.setRadius(0.05f);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = circle;
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 5.0f;
-        fixtureDef.restitution = 0.6f;
-        body.createFixture(fixtureDef);
-        body.applyLinearImpulse(forceVector, cannonPosition, true);
-
-        spheres.add(body);
-
-        //All following spheres
-        for(int i = 0 ; i < amount ; i++){
-            bodyDef.position.set(cannonPosition.x - directionVector.x * (i+1), cannonPosition.y - directionVector.y * (i+1));
-            Body body2 = world.createBody(bodyDef);
-            Fixture f2 = body2.createFixture(fixtureDef);
-
-            //Joint
-            DistanceJointDef jointDef = new DistanceJointDef();
-            jointDef.frequencyHz = 1.5f;
-            jointDef.initialize(spheres.lastElement(), body2, spheres.lastElement().getPosition(), body2.getPosition());
-            world.createJoint(jointDef);
-
-            body2.applyLinearImpulse(forceVector, body2.getPosition(), true);
-
-            spheres.add(body2);
-        }
-
-        circle.dispose();
+        // Create new convoy
+        convoys.add(new Convoy(this,cannonPosition,directionVector,forceVector,amount));
     }
 
     private void createEndPoint(Vector2 position){
