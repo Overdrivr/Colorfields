@@ -185,13 +185,11 @@ public class GameEngine {
         // Create a new convoy to throw from cannonPosition to (x,y)
         // Amount of spheres (+1 for the initial sphere)
         int amount = rnd.nextInt(10);
-        float jointDistance = 0.2f;
 
         // Compute direction vector of the convoy
         Vector2 directionVector = new Vector2();
         directionVector.x = x - cannonPosition.x;
         directionVector.y = y - cannonPosition.y;
-        directionVector.setLength(jointDistance);
 
         // Compute force vector
         Vector2 forceVector = new Vector2(directionVector);
