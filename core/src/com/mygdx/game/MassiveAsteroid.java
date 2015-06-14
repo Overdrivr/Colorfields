@@ -67,10 +67,6 @@ public class MassiveAsteroid extends Actor {
         // Reverse order so that points run clockwise
         simplified_contour.reverse();
 
-        for(int i = 0 ; i < simplified_contour.size ; i++){
-            Gdx.app.log("Pos",Float.toString(simplified_contour.get(i).x)+";"+Float.toString(simplified_contour.get(i).y));
-        }
-
         //Define body properties
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
