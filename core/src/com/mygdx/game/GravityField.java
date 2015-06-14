@@ -49,12 +49,12 @@ public class GravityField {
                 // Compute length
                 float r = localpoint.len();
                 // Gravitationnal constant * mass1 * mass2
-                float Gm1m2 = 0.005f;
+                float Gm1m2 = 0.003f;
 
                 if(r < 0.00001f)
                     localpoint.setLength(0.f);
                 else {
-                    float length = Gm1m2 / (r * r);
+                    float length = Gm1m2 / (r);//Find best formula for here
                     if (length > 0.1f)
                         length = 0.1f;
                     localpoint.setLength(length);
