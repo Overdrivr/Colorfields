@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
 
 import java.util.Vector;
 
@@ -77,33 +78,21 @@ public class Convoy {
         for(int i = 0 ; i < amount ; i++){
             bodyDef.position.set(position.x - orientation.x * (i+1), position.y - orientation.y * (i+1));
             Body body2 = e.world.createBody(bodyDef);
-            Fixture f2 = body2.createFixture(fixtureDef);
+            body2.setUserData(data);
+            body2.createFixture(fixtureDef);
 
-            //left joint
-            DistanceJointDef jointDef = new DistanceJointDef();
-            jointDef.frequencyHz = jointFrequency;
-            jointDef.length = jointLength;
+            // Revolution joint
+            RevoluteJointDef jointDef2 = new RevoluteJointDef();
+            jointDef2.enableLimit = true;
+            jointDef2.lowerAngle = -0.52f;
+            jointDef2.upperAngle = 0.52f;
 
-            Vector2 jointStart = new Vector2();
-            jointStart.x = containers.lastElement().getPosition().x + containerx;
-            jointStart.y = containers.lastElement().getPosition().y + containery;
+            Vector2 anchor = new Vector2();
+            anchor.x = (containers.lastElement().getPosition().x + body2.getPosition().x)/2;
+            anchor.y = (containers.lastElement().getPosition().y + body2.getPosition().y)/2;
 
-            Vector2 jointEnd = new Vector2();
-            jointEnd.x = body2.getPosition().x + containerx;
-            jointEnd.y = body2.getPosition().y - containery;
-
-            jointDef.initialize(containers.lastElement(), body2, jointStart, jointEnd);
-            e.world.createJoint(jointDef);
-
-            // Right joint
-            jointStart.x = containers.lastElement().getPosition().x - containerx;
-            jointStart.y = containers.lastElement().getPosition().y + containery;
-
-            jointEnd.x = body2.getPosition().x - containerx;
-            jointEnd.y = body2.getPosition().y - containery;
-
-            jointDef.initialize(containers.lastElement(), body2, jointStart, jointEnd);
-            e.world.createJoint(jointDef);
+            jointDef2.initialize(containers.lastElement(), body2, anchor);
+            e.world.createJoint(jointDef2);
 
             // Apply initial impulse to the body
             body2.applyLinearImpulse(force, body2.getPosition(), true);
