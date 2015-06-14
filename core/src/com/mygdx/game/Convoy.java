@@ -59,7 +59,6 @@ public class Convoy {
 
         orientation.setLength(jointLength);
 
-
         // Lateral offsets of joints in container ref
         /*Vector2 offsetA1 = ortho(orientation,true);
         Vector2 offsetA2 = ortho(orientation,false);

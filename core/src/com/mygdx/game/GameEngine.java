@@ -73,6 +73,9 @@ public class GameEngine {
     // player properties
     int score = 0;
 
+    // Constants
+    long maxChargeDuration = 1000;
+
     public GameEngine(final Stage s){
         stage = s;
 
@@ -211,7 +214,7 @@ public class GameEngine {
         body.setUserData(data);
 
         CircleShape shape = new CircleShape();
-        shape.setRadius(0.05f);
+        shape.setRadius(0.5f);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -232,10 +235,14 @@ public class GameEngine {
         if(shootingInPreparation){
             long elapsedTime = chrono.timeSinceMillis(startingTime);
 
-            if(elapsedTime > 1500)
-                elapsedTime = 1500;
+            if(elapsedTime > maxChargeDuration)
+                elapsedTime = maxChargeDuration;
 
-            float force = elapsedTime * 0.000005f;
+            // Formula for initial force
+            // f = e^2 * constant
+            float force = elapsedTime / 100;
+            force *= elapsedTime;
+            force *= 0.000005f;
 
             Gdx.app.log("Vector",Float.toString(force));
             createConvoy(x, y, force);
@@ -251,7 +258,7 @@ public class GameEngine {
     public float getChargePercent(){
         if(shootingInPreparation){
             long elapsedTime = chrono.timeSinceMillis(startingTime);
-            float percent = elapsedTime / 1500.f * 100.f;
+            float percent = elapsedTime / (float)(maxChargeDuration) * 100.f;
             if(percent > 100.f)
                 percent = 100.f;
             return percent;

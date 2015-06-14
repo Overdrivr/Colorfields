@@ -80,6 +80,11 @@ public class GameScreen implements Screen {
 
     public GameEngine engine;
 
+    // Constants
+    float zoomMin = 0.001f;
+    float zoomMax = 0.05f;
+    float zoomDefault = 0.005f;
+
     public GameScreen(final MyGdxGame g) {
 
         game = g;
@@ -90,7 +95,7 @@ public class GameScreen implements Screen {
         viewport = new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         stage = new Stage(viewport,g.batch);
         stage.getCamera().translate(-Gdx.graphics.getWidth()/2.f,-Gdx.graphics.getHeight()/2.f,0.f);
-        ((OrthographicCamera)this.stage.getCamera()).zoom = 0.005f;
+        ((OrthographicCamera)this.stage.getCamera()).zoom = zoomDefault;
         cameraSpeed = new Vector2(0,0);
 
         //Init game engine
@@ -279,7 +284,7 @@ public class GameScreen implements Screen {
     public void Zoom(float originalDistance,float currentDistance)
     {
         float ratio = originalDistance / currentDistance;
-        float final_zoom = MathUtils.clamp(initial_zoom * ratio, 0.001f, 0.02f);
+        float final_zoom = MathUtils.clamp(initial_zoom * ratio, zoomMin, zoomMax);
         ((OrthographicCamera)this.stage.getCamera()).zoom = final_zoom;
     }
 
