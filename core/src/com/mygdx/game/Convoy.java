@@ -90,8 +90,24 @@ public class Convoy {
     }
 
     public void update(GravityField field){
+        boolean t = false;
+        Vector2 force;
+        Color color = new Color(1,1,1,1);
+
         for(Body c : containers){
-            Vector2 force = field.getForce(c.getPosition().x,c.getPosition().y,new Color(0,1,0,1));
+            if(!t){
+                color.r = 0;
+                color.g = 1;
+                color.b = 0;
+                t = true;
+            }
+            else
+            {
+                color.r = 0.2f;
+                color.g = 0;
+                color.b = 0;
+            }
+            force = field.getForce(c.getPosition().x,c.getPosition().y,color);
             c.applyForce(force,c.getPosition(),true);
         }
     }

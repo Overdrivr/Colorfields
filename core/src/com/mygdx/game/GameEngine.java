@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -110,10 +111,11 @@ public class GameEngine {
 
         // Grid
         field = new GravityField(new Vector2(-worldSize/2,-worldSize/2),worldSize,100);
-        field.addSphericalAttractor(new Vector2(-2, -2));
-        field.debugDrawGrid = false; //TODO : Ne fonctionne pas ?
+        field.addSphericalAttractor(new Vector2(-2, -2),new Color(1,0,0,1));
+        field.debugDrawGrid = false;
 
-        field.addSphericalAttractor(new Vector2(3,4));
+        field.addSphericalAttractor(new Vector2(3,4),new Color(1,0,0,1));
+        field.addSphericalAttractor(new Vector2(3,-2),new Color(0,1,0,1));
 
         // Massive asteroids
         massiveAsteroids = new Array<MassiveAsteroid>();
