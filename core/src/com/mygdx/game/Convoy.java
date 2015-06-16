@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -23,21 +25,20 @@ public class Convoy {
     // Constants
     float jointFrequency = 3f;
     float jointLength = 0.3f;
-    float jointOffsetx = 0.05f;// Must be <= than containerx
-    float jointOffsety = 0.1f;// Must be <= than containery
     float containerx = 0.05f;
     float containery = 0.1f;
-
 
     public Convoy(GameEngine e, Vector2 position, Vector2 orientation, Vector2 force, int amount) {
         engine = e;
         containers = new Vector<Body>();
 
+        float angle = (float)(Math.atan2(orientation.x,orientation.y));
+
         //First sphere
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(position);
-        bodyDef.angle = 0;
+        bodyDef.angle = -angle;
         Body body = e.world.createBody(bodyDef);
 
         MyBodyData data = new MyBodyData();
@@ -52,26 +53,12 @@ public class Convoy {
         fixtureDef.density = 0.5f;
         fixtureDef.friction = 5.0f;
         fixtureDef.restitution = 0.6f;
-        Fixture f = body.createFixture(fixtureDef);
+        body.createFixture(fixtureDef);
         body.applyLinearImpulse(force, position, true);
 
         containers.add(body);
 
         orientation.setLength(jointLength);
-
-        // Lateral offsets of joints in container ref
-        /*Vector2 offsetA1 = ortho(orientation,true);
-        Vector2 offsetA2 = ortho(orientation,false);
-
-        offsetA1.setLength(jointOffsetx);
-        offsetA2.setLength(jointOffsetx);
-
-        // Vertical offsets of joints in container ref
-        Vector2 offsetB1 = orientation;
-        Vector2 offsetB2 = orientation;
-        offsetB1.setLength(containery);
-        offsetB2.setLength(-containery);*/
-
 
         //All following spheres
         for(int i = 0 ; i < amount ; i++){
@@ -104,7 +91,7 @@ public class Convoy {
 
     public void update(GravityField field){
         for(Body c : containers){
-            Vector2 force = field.getForce(c.getPosition().x,c.getPosition().y);
+            Vector2 force = field.getForce(c.getPosition().x,c.getPosition().y,new Color(0,1,0,1));
             c.applyForce(force,c.getPosition(),true);
         }
     }
