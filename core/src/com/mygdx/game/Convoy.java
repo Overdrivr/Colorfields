@@ -20,7 +20,9 @@ import java.util.Vector;
  */
 public class Convoy {
     private final GameEngine engine;
-    private Vector<Body> containers;
+    Vector<Body> containers;
+
+    boolean inCaptureSequence = false;
 
     // Constants
     float jointFrequency = 3f;
@@ -43,6 +45,7 @@ public class Convoy {
 
         MyBodyData data = new MyBodyData();
         data.type = BodyType.BODY_TYPE_ORE;
+        data.convoy = this;
         body.setUserData(data);
 
         PolygonShape shape = new PolygonShape();
@@ -90,25 +93,27 @@ public class Convoy {
     }
 
     public void update(GravityField field){
-        boolean t = false;
-        Vector2 force;
-        Color color = new Color(1,1,1,1);
+        if(!inCaptureSequence){
+            boolean t = false;
+            Vector2 force;
+            Color color = new Color(1,1,1,1);
 
-        for(Body c : containers){
-            if(!t){
-                color.r = 0;
-                color.g = 1;
-                color.b = 0;
-                t = true;
+            for(Body c : containers){
+                if(!t){
+                    color.r = 0;
+                    color.g = 1;
+                    color.b = 0;
+                    t = true;
+                }
+                else
+                {
+                    color.r = 0.2f;
+                    color.g = 0;
+                    color.b = 0;
+                }
+                force = field.getForce(c.getPosition().x,c.getPosition().y,color);
+                c.applyForce(force,c.getPosition(),true);
             }
-            else
-            {
-                color.r = 0.2f;
-                color.g = 0;
-                color.b = 0;
-            }
-            force = field.getForce(c.getPosition().x,c.getPosition().y,color);
-            c.applyForce(force,c.getPosition(),true);
         }
     }
 
@@ -121,5 +126,13 @@ public class Convoy {
         result.y = u.z * v.x - u.x * v.z;
 
         return result;
+    }
+
+    public Vector2 getFirstPosition(){
+        return  containers.firstElement().getPosition();
+    }
+
+    public void applyForceToFirst(Vector2 force){
+        containers.firstElement().applyForce(force,containers.firstElement().getPosition(),true);
     }
 }

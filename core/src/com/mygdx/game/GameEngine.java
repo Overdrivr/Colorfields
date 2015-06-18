@@ -38,6 +38,7 @@ public class GameEngine {
     private float accumulator = 0;
     private Vector<Convoy> convoys;
     Vector2 cannonPosition;
+    private EndPoint endPoint;
 
     b2Separator splitter;
     ContourToPolygons triangulator;
@@ -76,7 +77,7 @@ public class GameEngine {
 
     // Constants
     long maxChargeDuration = 1000;
-
+////////////////////////////////////////////////////////////////////////////
     public GameEngine(final Stage s){
         stage = s;
 
@@ -107,7 +108,7 @@ public class GameEngine {
         convoys = new Vector();
 
         createStartPoint(new Vector2(-4, 0.01f));
-        createEndPoint(new Vector2(3, 4));
+        endPoint = new EndPoint(world,new Vector2(3, 4),2.5f);
 
         // Grid
         field = new GravityField(new Vector2(-worldSize/2,-worldSize/2),worldSize,100);
@@ -142,22 +143,14 @@ public class GameEngine {
         float frameTime = Math.min(deltaTime, 0.25f);
         accumulator += frameTime;
         while (accumulator >= 1/45.f) {
-            world.step(1/45.f, 6, 2);
+            world.step(1 / 45.f, 6, 2);
             world.clearForces();
-            updateFields();
             accumulator -= 1/45.f;
         }
-
-        /*int numContacts = world.getContactCount();
-        if (numContacts > 0) {
-            Gdx.app.log("contact", "start of contact list");
-            for (Contact contact : world.getContactList()) {
-                Fixture fixtureA = contact.getFixtureA();
-                Fixture fixtureB = contact.getFixtureB();
-                Gdx.app.log("contact", "between " + fixtureA.toString() + " and " + fixtureB.toString());
-            }
-            Gdx.app.log("contact", "end of contact list");
-        }*/
+        // Update forces from gravity field
+        updateFields();
+        // Update force from endpoint traction system
+        endPoint.update();
     }
 
     private void updateFields(){
@@ -204,29 +197,6 @@ public class GameEngine {
         convoys.add(new Convoy(this,cannonPosition,directionVector,forceVector,amount));
     }
 
-    private void createEndPoint(Vector2 position){
-        // Init the end point
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(position);
-
-        Body body = world.createBody(bodyDef);
-
-        MyBodyData data = new MyBodyData();
-        data.type = BodyType.BODY_TYPE_END;
-        body.setUserData(data);
-
-        CircleShape shape = new CircleShape();
-        shape.setRadius(0.5f);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = shape;
-        fixtureDef.isSensor = true;
-
-        body.createFixture(fixtureDef);
-
-        shape.dispose();
-    }
-
     public void startCharge(){
         shootingInPreparation = true;
         startingTime = chrono.millis();
@@ -271,10 +241,11 @@ public class GameEngine {
 
     public void oreReachedEndpoint(Body b){
         score++;
-        // Destroy the ore ? wait for the convoy to reach entirely ?
-        // Apply a force to make the convoy go entirely to the endpoint ?
-
-        // Play the particule animation ?
+        //TODO : try except
+        //Get convoy
+        MyBodyData data = (MyBodyData)(b.getUserData());
+        //Start tracting system
+        endPoint.startCapture(data.convoy);
     }
 
     public int getScore(){
