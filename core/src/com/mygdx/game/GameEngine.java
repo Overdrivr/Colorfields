@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.JointDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
@@ -24,6 +25,8 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Vector;
 
@@ -72,6 +75,8 @@ public class GameEngine {
     float camerabound_plus_y;
     float camerabound_minus_y;
 
+    public LinkedList<JointDef> jointsToBuild;
+
     // player properties
     int score = 0;
 
@@ -105,10 +110,12 @@ public class GameEngine {
         contactListener = new MyContactListener(this);
         world.setContactListener(contactListener);
 
+        jointsToBuild = new LinkedList<JointDef>();
+
         convoys = new Vector();
 
         createStartPoint(new Vector2(-4, 0.01f));
-        endPoint = new EndPoint(world,new Vector2(3, 4),2.5f);
+        endPoint = new EndPoint(this,new Vector2(3, 4),2.5f);
 
         // Grid
         field = new GravityField(new Vector2(-worldSize/2,-worldSize/2),worldSize,100);
@@ -151,6 +158,16 @@ public class GameEngine {
         updateFields();
         // Update force from endpoint traction system
         endPoint.update();
+
+        // Empty the joint list to build
+        // This list is filled during the step function, where it is forbidden to create joints
+        while(!jointsToBuild.isEmpty()){
+            // Get the joint definition
+            JointDef jointDef = jointsToBuild.pop();
+            // Build it
+            world.createJoint(jointDef);
+            //jointDef.bodyB.setAwake(true);
+        }
     }
 
     private void updateFields(){

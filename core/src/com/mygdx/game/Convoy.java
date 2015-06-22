@@ -22,7 +22,7 @@ public class Convoy {
     private final GameEngine engine;
     Vector<Body> containers;
 
-    boolean inCaptureSequence = false;
+    boolean inCaptureSequence;
 
     // Constants
     float jointFrequency = 3f;
@@ -33,7 +33,7 @@ public class Convoy {
     public Convoy(GameEngine e, Vector2 position, Vector2 orientation, Vector2 force, int amount) {
         engine = e;
         containers = new Vector<Body>();
-
+        inCaptureSequence = false;
         float angle = (float)(Math.atan2(orientation.x,orientation.y));
 
         //First sphere
