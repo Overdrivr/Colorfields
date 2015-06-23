@@ -79,6 +79,10 @@ public class GameEngine {
     float camerabound_minus_y;
 
     public LinkedList<JointDef> jointsToBuild;
+    public LinkedList<Joint> joints;
+    public LinkedList<Joint> jointsToDestroy;
+    public LinkedList<Body> bodiesToDestroy;
+
 
     // player properties
     int score = 0;
@@ -114,6 +118,9 @@ public class GameEngine {
         world.setContactListener(contactListener);
 
         jointsToBuild = new LinkedList<JointDef>();
+        bodiesToDestroy = new LinkedList<Body>();
+        joints = new LinkedList<Joint>();
+        jointsToDestroy = new LinkedList<Joint>();
 
         convoys = new Vector();
 
@@ -202,7 +209,6 @@ public class GameEngine {
         // Create a new convoy to throw from cannonPosition to (x,y)
         // Amount of spheres (+1 for the initial sphere)
         int amount = rnd.nextInt(10);
-        amount = 1;
 
         // Compute direction vector of the convoy
         Vector2 directionVector = new Vector2();
@@ -214,7 +220,7 @@ public class GameEngine {
         forceVector.setLength(force);
 
         // Create new convoy
-        convoys.add(new Convoy(this,cannonPosition,directionVector,forceVector,amount));
+        convoys.add(new Convoy(this, cannonPosition, directionVector, forceVector, amount));
     }
 
     public void startCharge(){
@@ -260,12 +266,17 @@ public class GameEngine {
     }
 
     public void oreReachedEndpoint(Body b){
-        score++;
         //TODO : try except
         //Get convoy
         MyBodyData data = (MyBodyData)(b.getUserData());
-        //Start tracting system
+        //Start tracking system
         endPoint.startCapture(data.convoy);
+    }
+
+    public void oreReachedEndpointFinal(Body b){
+        score++;
+        //Tell endpoint that a convoy has reached final destination
+        endPoint.endCapture(b);
     }
 
     public int getScore(){

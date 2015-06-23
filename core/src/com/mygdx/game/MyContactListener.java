@@ -37,13 +37,21 @@ public class MyContactListener implements ContactListener {
 
         if(dataA != null && dataB != null)
         {
+            // Outer circle
             if(dataA.type == BodyType.BODY_TYPE_ORE && dataB.type == BodyType.BODY_TYPE_END){
+                // An ore has reached the endpoint, tell the game engine
                 engine.oreReachedEndpoint(A);
             }
             if(dataB.type == BodyType.BODY_TYPE_ORE && dataA.type == BodyType.BODY_TYPE_END){
-                // An ore has reached the endpoint, tell the game engine
                 engine.oreReachedEndpoint(B);
-                //Gdx.app.log("beginContact", "between " + A.toString() + " and " + B.toString());
+            }
+            // Inner circle
+            if(dataA.type == BodyType.BODY_TYPE_ORE && dataB.type == BodyType.BODY_TYPE_END_DESTROY){
+                // An ore has reached the inner endpoint, tell the game engine
+                engine.oreReachedEndpointFinal(A);
+            }
+            if(dataB.type == BodyType.BODY_TYPE_ORE && dataA.type == BodyType.BODY_TYPE_END_DESTROY){
+                engine.oreReachedEndpointFinal(B);
             }
         }
 

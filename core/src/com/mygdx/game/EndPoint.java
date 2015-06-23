@@ -18,7 +18,8 @@ import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
 public class EndPoint {
     final GameEngine gameEngine;
     public Vector2 m_position;
-    Body body;
+    Body body,body_inner;
+    float radius_ratio = 4;
 
     public EndPoint(final GameEngine e, Vector2 position, float radius){
         m_position = position;
@@ -43,6 +44,14 @@ public class EndPoint {
 
         body.createFixture(fixtureDef);
 
+        // Build inner circle (where containers are destroyed upon contact)
+        shape.setRadius(radius / radius_ratio);
+        body_inner = gameEngine.world.createBody(bodyDef);
+        body_inner.createFixture(fixtureDef);
+        MyBodyData data2 = new MyBodyData();
+        data2.type = BodyType.BODY_TYPE_END_DESTROY;
+        body_inner.setUserData(data2);
+
         shape.dispose();
     }
     public void startCapture(Convoy c){
@@ -61,5 +70,27 @@ public class EndPoint {
             // Because it is forbidden to add/remove joints/bodies during box2d step function
             gameEngine.jointsToBuild.push(jointDef);
         }
+    }
+
+    public void endCapture(Body b){
+        // Get convoy
+        MyBodyData data = (MyBodyData)(b.getUserData());
+
+        // Mark current body for destroy
+        // gameEngine.bodiesToDestroy.push(b);
+
+        // Mark the MouseJoint for destroy
+
+        //gameEngine.jointsToBuild();
+
+        // If convoy still has remaining containers
+        // Create new MouseJoint with next element
+
+        // Mark the RevoluteJoint for destroy
+
+
+
+
+
     }
 }
