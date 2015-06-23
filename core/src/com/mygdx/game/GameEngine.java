@@ -13,11 +13,14 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.JointDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
+import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
+import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
@@ -156,8 +159,6 @@ public class GameEngine {
         }
         // Update forces from gravity field
         updateFields();
-        // Update force from endpoint traction system
-        endPoint.update();
 
         // Empty the joint list to build
         // This list is filled during the step function, where it is forbidden to create joints
@@ -165,8 +166,9 @@ public class GameEngine {
             // Get the joint definition
             JointDef jointDef = jointsToBuild.pop();
             // Build it
-            world.createJoint(jointDef);
-            //jointDef.bodyB.setAwake(true);
+            MouseJoint joint = (MouseJoint) world.createJoint(jointDef);
+            // Move target point to final point so that the body is attracted to final point
+            joint.setTarget(endPoint.m_position);
         }
     }
 
@@ -200,6 +202,7 @@ public class GameEngine {
         // Create a new convoy to throw from cannonPosition to (x,y)
         // Amount of spheres (+1 for the initial sphere)
         int amount = rnd.nextInt(10);
+        amount = 1;
 
         // Compute direction vector of the convoy
         Vector2 directionVector = new Vector2();
