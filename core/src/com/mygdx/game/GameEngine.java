@@ -82,6 +82,7 @@ public class GameEngine {
     public LinkedList<Joint> joints;
     public LinkedList<Joint> jointsToDestroy;
     public LinkedList<Body> bodiesToDestroy;
+    public LinkedList<Convoy> convoysToDestroy;
 
 
     // player properties
@@ -121,6 +122,7 @@ public class GameEngine {
         bodiesToDestroy = new LinkedList<Body>();
         joints = new LinkedList<Joint>();
         jointsToDestroy = new LinkedList<Joint>();
+        convoysToDestroy = new LinkedList<Convoy>();
 
         convoys = new Vector();
 
@@ -166,6 +168,11 @@ public class GameEngine {
         }
         // Update forces from gravity field
         updateFields();
+
+        while(!convoysToDestroy.isEmpty()){
+            Convoy c = convoysToDestroy.pop();
+            c.DestroyContainer();
+        }
 
         // Empty the joint list to build
         // This list is filled during the step function, where it is forbidden to create joints
@@ -242,7 +249,6 @@ public class GameEngine {
             force *= elapsedTime;
             force *= 0.000005f;
 
-            Gdx.app.log("Vector",Float.toString(force));
             createConvoy(x, y, force);
             shootingInPreparation = false;
         }

@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
@@ -23,6 +24,8 @@ public class Convoy {
     Vector<Body> containers;
 
     boolean inCaptureSequence;
+
+    private int index = -1;
 
     // Constants
     float jointFrequency = 3f;
@@ -81,7 +84,7 @@ public class Convoy {
             anchor.y = (containers.lastElement().getPosition().y + body2.getPosition().y)/2;
 
             jointDef2.initialize(containers.lastElement(), body2, anchor);
-            e.world.createJoint(jointDef2);
+            Joint j = e.world.createJoint(jointDef2);
 
             // Apply initial impulse to the body
             body2.applyLinearImpulse(force, body2.getPosition(), true);
@@ -134,5 +137,20 @@ public class Convoy {
 
     public void applyForceToFirst(Vector2 force){
         containers.firstElement().applyForce(force,containers.firstElement().getPosition(),true);
+    }
+
+    public void markForDestroy(int containerIndex){
+        index = containerIndex;
+    }
+
+    public void DestroyContainer(){
+        if(index >= containers.size())
+            return;
+        if(index < 0)
+            return;
+
+        Gdx.app.log("DESTROYING",Integer.toString(index));
+        engine.world.destroyBody(containers.get(index));
+        containers.remove(containers.get(index));
     }
 }

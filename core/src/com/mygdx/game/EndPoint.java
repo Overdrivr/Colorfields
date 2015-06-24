@@ -75,22 +75,31 @@ public class EndPoint {
     public void endCapture(Body b){
         // Get convoy
         MyBodyData data = (MyBodyData)(b.getUserData());
+        Gdx.app.log("CAUGTH",Integer.toString(data.convoy.containers.indexOf(b)));
+        data.convoy.markForDestroy(0);
+        // Mark current convoy container for destroy
+        gameEngine.convoysToDestroy.push(data.convoy);
 
-        // Mark current body for destroy
-        // gameEngine.bodiesToDestroy.push(b);
-
-        // Mark the MouseJoint for destroy
-
-        //gameEngine.jointsToBuild();
-
-        // If convoy still has remaining containers
-        // Create new MouseJoint with next element
-
-        // Mark the RevoluteJoint for destroy
-
-
-
-
-
+        // If remaining object
+        if(data.convoy.containers.size() > 1){
+            /*MouseJointDef jointDef = new MouseJointDef();
+            jointDef.bodyA = body;
+            jointDef.bodyB = data.convoy.containers.elementAt(1);//THIS IS NOT GOOD
+            //IF THE BODY IS ALSO MARKED FOR DESTROYED BEFORE GOING OUT OF THE STEP FUNCTION
+            //SIGSEGV
+            jointDef.frequencyHz = 10;
+            jointDef.maxForce = 5*jointDef.bodyB.getMass();
+            jointDef.dampingRatio = 10.f;
+            jointDef.target.set(jointDef.bodyB.getPosition());
+            jointDef.collideConnected = true;
+            // Put the joint definition in joints-to-build list
+            // Because it is forbidden to add/remove joints/bodies during box2d step function
+            gameEngine.jointsToBuild.push(jointDef);*/
+        }
+        else
+        {
+            // Destroy convoy object ?
+        }
+        /**/
     }
 }
