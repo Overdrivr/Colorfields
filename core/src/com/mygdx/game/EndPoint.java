@@ -47,6 +47,7 @@ public class EndPoint {
         // Build inner circle (where containers are destroyed upon contact)
         shape.setRadius(radius / radius_ratio);
         body_inner = gameEngine.world.createBody(bodyDef);
+        fixtureDef.isSensor = false;
         body_inner.createFixture(fixtureDef);
         MyBodyData data2 = new MyBodyData();
         data2.type = BodyType.BODY_TYPE_END_DESTROY;
