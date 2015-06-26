@@ -25,8 +25,6 @@ public class Convoy {
 
     boolean inCaptureSequence;
 
-    private int index = -1;
-
     // Constants
     float jointFrequency = 3f;
     float jointLength = 0.3f;
@@ -139,17 +137,16 @@ public class Convoy {
         containers.firstElement().applyForce(force,containers.firstElement().getPosition(),true);
     }
 
-    public void markForDestroy(int containerIndex){
-        index = containerIndex;
-    }
-
-    public void DestroyContainer(){
+    /*
+    TODO : This method should be improved later to create a new convoy if
+    the original convoy gets cut in half
+     */
+    public void DestroyContainer(int index){
         if(index >= containers.size())
             return;
         if(index < 0)
             return;
 
-        Gdx.app.log("DESTROYING",Integer.toString(index));
         engine.world.destroyBody(containers.get(index));
         containers.remove(containers.get(index));
     }

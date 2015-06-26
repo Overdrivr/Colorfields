@@ -78,11 +78,12 @@ public class GameEngine {
     float camerabound_plus_y;
     float camerabound_minus_y;
 
-    public LinkedList<JointDef> jointsToBuild;
     public LinkedList<Joint> joints;
-    public LinkedList<Joint> jointsToDestroy;
     public LinkedList<Body> bodiesToDestroy;
-    public LinkedList<Convoy> convoysToDestroy;
+    public LinkedList<JointDef> jointsToBuild;
+
+    public Array<ContainerData> markedContainersForDestroy;
+    public Array<MouseJointData> markedMouseJointsToBuild;
 
 
     // player properties
@@ -118,11 +119,14 @@ public class GameEngine {
         contactListener = new MyContactListener(this);
         world.setContactListener(contactListener);
 
-        jointsToBuild = new LinkedList<JointDef>();
         bodiesToDestroy = new LinkedList<Body>();
         joints = new LinkedList<Joint>();
-        jointsToDestroy = new LinkedList<Joint>();
-        convoysToDestroy = new LinkedList<Convoy>();
+
+
+        // Initiate operation queues
+        markedContainersForDestroy = new Array<ContainerData>();
+        markedMouseJointsToBuild = new Array<MouseJointData>();
+        jointsToBuild = new LinkedList<JointDef>();
 
         convoys = new Vector();
 
@@ -169,9 +173,10 @@ public class GameEngine {
         // Update forces from gravity field
         updateFields();
 
-        while(!convoysToDestroy.isEmpty()){
-            Convoy c = convoysToDestroy.pop();
-            c.DestroyContainer();
+        // Perform operations on containers registered during step function
+        while(markedContainersForDestroy.size > 0){
+            ContainerData d = markedContainersForDestroy.pop();
+            d.convoy.DestroyContainer(d.index);
         }
 
         // Empty the joint list to build
@@ -183,6 +188,27 @@ public class GameEngine {
             MouseJoint joint = (MouseJoint) world.createJoint(jointDef);
             // Move target point to final point so that the body is attracted to final point
             joint.setTarget(endPoint.m_position);
+        }
+
+        // Empty the mouse joint list
+        while(markedMouseJointsToBuild.size > 0){
+            MouseJointData d = markedMouseJointsToBuild.pop();
+
+            // If the convoy is empty, destroy it
+            if(d.convoy.containers.size() == 0){
+                //TODO : Make sure it is destroyed cleanly
+                Gdx.app.log("GameEngine","joint is destroyed");
+                convoys.remove(d.convoy);
+                break;
+            }
+
+            // If not, grab the first container and create the joint with it
+            d.jointDef.bodyB = d.convoy.containers.firstElement();
+            d.jointDef.target.set(d.jointDef.bodyB.getPosition());
+            d.jointDef.maxForce *= d.jointDef.bodyB.getMass();
+
+            MouseJoint joint = (MouseJoint) world.createJoint(d.jointDef);
+            joint.setTarget(d.jointDef.bodyA.getPosition());
         }
     }
 
