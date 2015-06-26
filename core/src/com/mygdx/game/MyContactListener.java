@@ -23,8 +23,6 @@ public class MyContactListener implements ContactListener {
     public void endContact(Contact contact) {
         Body A = contact.getFixtureA().getBody();
         Body B = contact.getFixtureB().getBody();
-
-        //Gdx.app.log("endContact", "between " + fixtureA.toString() + " and " + fixtureB.toString());
     }
 
     @Override
@@ -40,22 +38,20 @@ public class MyContactListener implements ContactListener {
             // Outer circle
             if(dataA.type == BodyType.BODY_TYPE_ORE && dataB.type == BodyType.BODY_TYPE_END){
                 // An ore has reached the endpoint, tell the game engine
-                engine.oreReachedEndpoint(A);
+                engine.containerReachedEndpointLockArea(A);
             }
             if(dataB.type == BodyType.BODY_TYPE_ORE && dataA.type == BodyType.BODY_TYPE_END){
-                engine.oreReachedEndpoint(B);
+                engine.containerReachedEndpointLockArea(B);
             }
             // Inner circle
             if(dataA.type == BodyType.BODY_TYPE_ORE && dataB.type == BodyType.BODY_TYPE_END_DESTROY){
                 // An ore has reached the inner endpoint, tell the game engine
-                engine.oreReachedEndpointFinal(A);
+                engine.containerReachedEndpointDestroyArea(A);
             }
             if(dataB.type == BodyType.BODY_TYPE_ORE && dataA.type == BodyType.BODY_TYPE_END_DESTROY){
-                engine.oreReachedEndpointFinal(B);
+                engine.containerReachedEndpointDestroyArea(B);
             }
         }
-
-        //Gdx.app.log("Type",fixtureA.getUserData().toString()+" : "+fixtureB.getUserData().toString());
     }
 
     @Override

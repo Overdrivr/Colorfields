@@ -76,7 +76,6 @@ public class EndPoint {
     public void endCapture(Body b){
         // Get convoy
         MyBodyData data = (MyBodyData)(b.getUserData());
-        Gdx.app.log("CAUGTH", Integer.toString(data.convoy.containers.indexOf(b)));
 
         // Mark current convoy container for destroy
         ContainerData d = new ContainerData();

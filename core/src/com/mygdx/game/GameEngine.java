@@ -8,28 +8,18 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.JointDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
-import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
 import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
 import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
-import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Random;
 import java.util.Vector;
 
@@ -49,7 +39,7 @@ public class GameEngine {
     b2Separator splitter;
     ContourToPolygons triangulator;
 
-    GravityField field;
+    public GravityField field;
     MyContactListener contactListener;
 
     //Image processing
@@ -71,13 +61,6 @@ public class GameEngine {
     //debug objects
     ShapeRenderer renderer;
 
-    // Level properties
-    float worldSize;
-    float camerabound_plus_x;
-    float camerabound_minus_x;
-    float camerabound_plus_y;
-    float camerabound_minus_y;
-
     public LinkedList<Joint> joints;
     public LinkedList<Body> bodiesToDestroy;
     public LinkedList<JointDef> jointsToBuild;
@@ -92,7 +75,7 @@ public class GameEngine {
     // Constants
     long maxChargeDuration = 1000;
 ////////////////////////////////////////////////////////////////////////////
-    public GameEngine(final Stage s){
+    public GameEngine(final Stage s, float worldSize){
         stage = s;
 
         //Init tools
@@ -102,16 +85,12 @@ public class GameEngine {
         assetManager = new AssetManager();
         renderer = new ShapeRenderer();
         rnd = new Random();
-        initLevel();
+        initLevel(worldSize);
     }
 
-    private void initLevel(){
+    private void initLevel(float worldSize){
         // Level properties
-        worldSize = 50.f;
-        camerabound_plus_x = worldSize/2.f;
-        camerabound_minus_x = -worldSize/2.f;
-        camerabound_plus_y = worldSize/2.f;
-        camerabound_minus_y = -worldSize/2.f;
+
         cannonPosition = new Vector2(-4.f,0.1f);
 
         // Init physics world
@@ -183,7 +162,8 @@ public class GameEngine {
         // This list is filled during the step function, where it is forbidden to create joints
         while(!jointsToBuild.isEmpty()){
             // Get the joint definition
-            JointDef jointDef = jointsToBuild.pop();
+            MouseJointDef jointDef = (MouseJointDef) jointsToBuild.pop();
+            jointDef.target.set(jointDef.bodyB.getPosition());
             // Build it
             MouseJoint joint = (MouseJoint) world.createJoint(jointDef);
             // Move target point to final point so that the body is attracted to final point
@@ -197,7 +177,6 @@ public class GameEngine {
             // If the convoy is empty, destroy it
             if(d.convoy.containers.size() == 0){
                 //TODO : Make sure it is destroyed cleanly
-                Gdx.app.log("GameEngine","joint is destroyed");
                 convoys.remove(d.convoy);
                 break;
             }
@@ -208,6 +187,7 @@ public class GameEngine {
             d.jointDef.maxForce *= d.jointDef.bodyB.getMass();
 
             MouseJoint joint = (MouseJoint) world.createJoint(d.jointDef);
+            // Move target point to final point so that the body is attracted to final point
             joint.setTarget(d.jointDef.bodyA.getPosition());
         }
     }
@@ -297,7 +277,7 @@ public class GameEngine {
             return 0;
     }
 
-    public void oreReachedEndpoint(Body b){
+    public void containerReachedEndpointLockArea(Body b){
         //TODO : try except
         //Get convoy
         MyBodyData data = (MyBodyData)(b.getUserData());
@@ -305,7 +285,7 @@ public class GameEngine {
         endPoint.startCapture(data.convoy);
     }
 
-    public void oreReachedEndpointFinal(Body b){
+    public void containerReachedEndpointDestroyArea(Body b){
         score++;
         //Tell endpoint that a convoy has reached final destination
         endPoint.endCapture(b);
@@ -313,28 +293,5 @@ public class GameEngine {
 
     public int getScore(){
         return score;
-    }
-
-    /* TODO : This method involves render only and has nothing to do here*/
-    public void debugDraw(Matrix4 combined){
-        renderer.setProjectionMatrix(combined);
-        renderer.begin(ShapeRenderer.ShapeType.Line);
-
-        field.debug_draw(renderer,combined);
-        //Draw XY reference
-        float x1 = -worldSize/2;
-        float x2 = +worldSize/2;
-        float y1 = 0;
-        float y2 = 0;
-        renderer.setColor(1,0,0,1);
-        renderer.line(x1, y1, x2, y2);
-        x1 = 0;
-        x2 = 0;
-        y1 = -worldSize/2;
-        y2 = +worldSize/2;
-        renderer.setColor(0,1,0,1);
-        renderer.line(x1, y1, x2, y2);
-
-        renderer.end();
     }
 }

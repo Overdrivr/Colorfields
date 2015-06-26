@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -78,10 +79,17 @@ public class GameScreen implements Screen {
 
     public GameEngine engine;
 
-    // Constants
+    ///////////////////////////////////// Global constants
     float zoomMin = 0.001f;
     float zoomMax = 0.05f;
     float zoomDefault = 0.005f;
+
+    ////////////////////////////////////  Level constants
+    float worldSize = 50.f;
+    float camerabound_plus_x = worldSize/2.f;
+    float camerabound_minus_x = -worldSize/2.f;
+    float camerabound_plus_y = worldSize/2.f;
+    float camerabound_minus_y = -worldSize/2.f;
 
     public GameScreen(final MyGdxGame g) {
 
@@ -97,7 +105,7 @@ public class GameScreen implements Screen {
         cameraSpeed = new Vector2(0,0);
 
         //Init game engine
-        engine = new GameEngine(stage);
+        engine = new GameEngine(stage,worldSize);
 
 
         //Internalization
@@ -110,7 +118,6 @@ public class GameScreen implements Screen {
         //Compute padding
         //TODO : to use
         float padding = Gdx.graphics.getHeight()/20;
-        Gdx.app.log("PADDING",Float.toString(padding));
         table = new Table(skin);
         table.setFillParent(true);
         //table.debug();
@@ -170,7 +177,7 @@ public class GameScreen implements Screen {
 
         stage.act(delta);
         stage.getCamera().update();
-        engine.debugDraw(stage.getCamera().combined);
+        debugDraw(stage.getCamera().combined);
         stage.draw();
 
         debugRenderer.render(engine.world, stage.getViewport().getCamera().combined);
@@ -286,6 +293,29 @@ public class GameScreen implements Screen {
         ((OrthographicCamera)this.stage.getCamera()).zoom = final_zoom;
     }
 
+    public void debugDraw(Matrix4 combined){
+        shapeRenderer.setProjectionMatrix(combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+        engine.field.debug_draw(shapeRenderer,combined);
+        //Draw XY reference
+        float x1 = -worldSize/2;
+        float x2 = +worldSize/2;
+        float y1 = 0;
+        float y2 = 0;
+        shapeRenderer.setColor(1,0,0,1);
+        shapeRenderer.line(x1, y1, x2, y2);
+        x1 = 0;
+        x2 = 0;
+        y1 = -worldSize/2;
+        y2 = +worldSize/2;
+        shapeRenderer.setColor(0,1,0,1);
+        shapeRenderer.line(x1, y1, x2, y2);
+
+        shapeRenderer.end();
+    }
+
+    //Todo : to replace with external file
     private void initSkin(){
         skin = new Skin();
 
