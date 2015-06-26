@@ -25,11 +25,14 @@ public class Convoy {
 
     boolean inCaptureSequence;
 
-    // Constants
+    ////////////////////////////////////// Constants
     float jointFrequency = 3f;
     float jointLength = 0.3f;
     float containerx = 0.05f;
     float containery = 0.1f;
+    float convoy_lowerAngle = -0.52f;
+    float convoy_upperAngle = 0.52f;
+    ////////////////////////////////////////////////
 
     public Convoy(GameEngine e, Vector2 position, Vector2 orientation, Vector2 force, int amount) {
         engine = e;
@@ -74,12 +77,15 @@ public class Convoy {
             // Revolution joint
             RevoluteJointDef jointDef2 = new RevoluteJointDef();
             jointDef2.enableLimit = true;
-            jointDef2.lowerAngle = -0.52f;
-            jointDef2.upperAngle = 0.52f;
+            jointDef2.lowerAngle = convoy_lowerAngle;
+            jointDef2.upperAngle = convoy_upperAngle;
 
             Vector2 anchor = new Vector2();
             anchor.x = (containers.lastElement().getPosition().x + body2.getPosition().x)/2;
             anchor.y = (containers.lastElement().getPosition().y + body2.getPosition().y)/2;
+            // For other joint anchor configuration
+			//anchor.x = containers.lastElement().getPosition().x;
+            //anchor.y = containers.lastElement().getPosition().y;
 
             jointDef2.initialize(containers.lastElement(), body2, anchor);
             Joint j = e.world.createJoint(jointDef2);
@@ -127,14 +133,6 @@ public class Convoy {
         result.y = u.z * v.x - u.x * v.z;
 
         return result;
-    }
-
-    public Vector2 getFirstPosition(){
-        return  containers.firstElement().getPosition();
-    }
-
-    public void applyForceToFirst(Vector2 force){
-        containers.firstElement().applyForce(force,containers.firstElement().getPosition(),true);
     }
 
     /*
