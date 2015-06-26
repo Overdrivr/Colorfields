@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 
+import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -44,6 +45,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.I18NBundle;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 
+import java.beans.XMLEncoder;
+import java.io.File;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Random;
@@ -91,10 +94,19 @@ public class GameScreen implements Screen {
     float camerabound_plus_y = worldSize/2.f;
     float camerabound_minus_y = -worldSize/2.f;
 
-    public GameScreen(final MyGdxGame g) {
+    /*
+        GameScreen is started on level startup
+     */
+
+    public GameScreen(final MyGdxGame g, FileHandle globalParameters, FileHandle leveldata) {
 
         game = g;
         initSkin();
+
+        // Load global parameters
+
+        // Load level data
+        loadLevelData(leveldata);
 
         // Stage controls the rendering process
         // Viewports helps managing the camera render aera in function of the device
@@ -160,6 +172,10 @@ public class GameScreen implements Screen {
         //Debug rendering
         debugRenderer = new Box2DDebugRenderer();
         debugRenderer.setDrawVelocities(true);
+    }
+
+    public void loadLevelData(FileHandle level){
+
     }
 
     @Override
@@ -273,6 +289,10 @@ public class GameScreen implements Screen {
         Vector2 diff = start_world.mulAdd(end_world,-1);
 
         stage.getCamera().translate(diff.x,diff.y,0.f);
+
+        // Prevent camera from going outside world
+        // TODO : Use frustum to compute edge location at game plane level
+        // If the camera is outside, bring it back
     }
 
     public void Fling(float velocityX, float velocityY){
