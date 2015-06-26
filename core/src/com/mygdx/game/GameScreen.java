@@ -48,8 +48,6 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Vector;
 
-import sun.swing.CachedPainter;
-
 /**
  * Created by Bart on 26/04/2015.
  */
