@@ -46,11 +46,9 @@ public class MyContactListener implements ContactListener {
             // Inner circle
             if(dataA.type == BodyType.BODY_TYPE_CHARACTER && dataB.type == BodyType.BODY_TYPE_END_DESTROY){
                 // A character has reached the inner endpoint, tell the game engine
-                Gdx.app.log("MyContactListener","Destroy container");
                 engine.containerReachedEndpointDestroyArea(A);
             }
             if(dataB.type == BodyType.BODY_TYPE_CHARACTER && dataA.type == BodyType.BODY_TYPE_END_DESTROY){
-                Gdx.app.log("MyContactListener","Destroy container");
                 engine.containerReachedEndpointDestroyArea(B);
             }
         }
