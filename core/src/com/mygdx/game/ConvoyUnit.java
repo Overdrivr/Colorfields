@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -18,7 +20,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * Created by B48923 on 7/1/2015.
  */
 public class ConvoyUnit extends Actor {
-    Image img;
+    Sprite sprite;
     private final GameEngine engine;
     int unit_type;
     Convoy convoy;
@@ -74,17 +76,19 @@ public class ConvoyUnit extends Actor {
         // Get the assets
         Texture texture = engine.assetManager.get(imagename,Texture.class);
         TextureRegion t = new TextureRegion(texture);
-        img = new Image(t);
-        img.setScale(0.01f);
+        sprite = new Sprite(texture);
+        float factor = 0.01f;
+        sprite.setScale(factor);
+        sprite.setOriginCenter();// Utile ?
 
         // Attach the image to the stage
         engine.stage.addActor(this);
     }
 
-    public void draw(Batch batch, float parentAlpha){
-        img.setPosition(body.getPosition().x, body.getPosition().y);
-        img.setRotation((float) (Math.toDegrees(body.getAngle())));
-        img.draw(batch, parentAlpha);
+    public void draw(Batch batch, float parentAlpha) {
+        sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
+        sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
+        sprite.draw(batch, parentAlpha);
     }
 
     public void dispose(){
