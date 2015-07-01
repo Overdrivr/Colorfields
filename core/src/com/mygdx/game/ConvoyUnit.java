@@ -59,7 +59,8 @@ public class ConvoyUnit extends Actor {
         shape.dispose();
 
         // Init graphics
-
+        // TODO : Need to use a texture region instead of individual textures
+        // to reduce OpenGL texture bind calls
         if(type >= engine.imagename_lookup.size || type < 0)
             throw new GdxRuntimeException("ConvoyUnit : Requested texture id : "+type+" is illegal");
 
@@ -75,13 +76,13 @@ public class ConvoyUnit extends Actor {
 
         // Get the assets
         Texture texture = engine.assetManager.get(imagename,Texture.class);
-        TextureRegion t = new TextureRegion(texture);
+        //TextureRegion t = new TextureRegion(texture);
         sprite = new Sprite(texture);
         float factor = 0.01f;
         sprite.setScale(factor);
         sprite.setOriginCenter();// Utile ?
 
-        // Attach the image to the stage
+        // Attach this to the stage for draw() to be called on render loop
         engine.stage.addActor(this);
     }
 
