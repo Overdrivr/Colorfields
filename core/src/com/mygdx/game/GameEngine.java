@@ -65,8 +65,11 @@ public class GameEngine {
     public LinkedList<Body> bodiesToDestroy;
     public LinkedList<JointDef> jointsToBuild;
 
-    public Array<ContainerData> markedContainersForDestroy;
+    public Array<ConvoyUnit> markedContainersForDestroy;
     public Array<MouseJointData> markedMouseJointsToBuild;
+
+    // Textures names
+    Array<String> imagename_lookup;
 
 
     // player properties
@@ -77,6 +80,11 @@ public class GameEngine {
 ////////////////////////////////////////////////////////////////////////////
     public GameEngine(final Stage s, float worldSize){
         stage = s;
+
+        // Init image lookup table
+        imagename_lookup = new Array<String>();
+        imagename_lookup.add("default.png");
+        imagename_lookup.add("Characters/1.png");
 
         //Init tools
         converter = new PNGtoBox2D();
@@ -103,7 +111,7 @@ public class GameEngine {
 
 
         // Initiate operation queues
-        markedContainersForDestroy = new Array<ContainerData>();
+        markedContainersForDestroy = new Array<ConvoyUnit>();
         markedMouseJointsToBuild = new Array<MouseJointData>();
         jointsToBuild = new LinkedList<JointDef>();
 
@@ -154,8 +162,8 @@ public class GameEngine {
 
         // Perform operations on containers registered during step function
         while(markedContainersForDestroy.size > 0){
-            ContainerData d = markedContainersForDestroy.pop();
-            d.convoy.DestroyContainer(d.index);
+            ConvoyUnit d = markedContainersForDestroy.pop();
+            d.convoy.Remove(d);
         }
 
         // Empty the joint list to build
@@ -182,7 +190,7 @@ public class GameEngine {
             }
 
             // If not, grab the first container and create the joint with it
-            d.jointDef.bodyB = d.convoy.containers.firstElement();
+            d.jointDef.bodyB = d.convoy.containers.firstElement().body;
             d.jointDef.target.set(d.jointDef.bodyB.getPosition());
             d.jointDef.maxForce *= d.jointDef.bodyB.getMass();
 

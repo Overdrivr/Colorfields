@@ -36,19 +36,21 @@ public class MyContactListener implements ContactListener {
         if(dataA != null && dataB != null)
         {
             // Outer circle
-            if(dataA.type == BodyType.BODY_TYPE_ORE && dataB.type == BodyType.BODY_TYPE_END){
-                // An ore has reached the endpoint, tell the game engine
+            if(dataA.type == BodyType.BODY_TYPE_CHARACTER && dataB.type == BodyType.BODY_TYPE_END){
+                // A character has reached the endpoint, tell the game engine
                 engine.containerReachedEndpointLockArea(A);
             }
-            if(dataB.type == BodyType.BODY_TYPE_ORE && dataA.type == BodyType.BODY_TYPE_END){
+            if(dataB.type == BodyType.BODY_TYPE_CHARACTER && dataA.type == BodyType.BODY_TYPE_END){
                 engine.containerReachedEndpointLockArea(B);
             }
             // Inner circle
-            if(dataA.type == BodyType.BODY_TYPE_ORE && dataB.type == BodyType.BODY_TYPE_END_DESTROY){
-                // An ore has reached the inner endpoint, tell the game engine
+            if(dataA.type == BodyType.BODY_TYPE_CHARACTER && dataB.type == BodyType.BODY_TYPE_END_DESTROY){
+                // A character has reached the inner endpoint, tell the game engine
+                Gdx.app.log("MyContactListener","Destroy container");
                 engine.containerReachedEndpointDestroyArea(A);
             }
-            if(dataB.type == BodyType.BODY_TYPE_ORE && dataA.type == BodyType.BODY_TYPE_END_DESTROY){
+            if(dataB.type == BodyType.BODY_TYPE_CHARACTER && dataA.type == BodyType.BODY_TYPE_END_DESTROY){
+                Gdx.app.log("MyContactListener","Destroy container");
                 engine.containerReachedEndpointDestroyArea(B);
             }
         }

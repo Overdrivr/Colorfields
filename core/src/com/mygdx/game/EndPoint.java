@@ -61,11 +61,11 @@ public class EndPoint {
 
             MouseJointDef jointDef = new MouseJointDef();
             jointDef.bodyA = body;
-            jointDef.bodyB = c.containers.firstElement();
+            jointDef.bodyB = c.containers.firstElement().body;
             jointDef.frequencyHz = 10;
-            jointDef.maxForce = 20*c.containers.firstElement().getMass();
+            jointDef.maxForce = 20*c.containers.firstElement().body.getMass();
             jointDef.dampingRatio = 10.f;
-            jointDef.target.set(c.containers.firstElement().getPosition());
+            jointDef.target.set(c.containers.firstElement().body.getPosition());
             jointDef.collideConnected = true;
             // Put the joint definition in joints-to-build list
             // Because it is forbidden to add/remove joints/bodies during box2d step function
@@ -78,10 +78,7 @@ public class EndPoint {
         MyBodyData data = (MyBodyData)(b.getUserData());
 
         // Mark current convoy container for destroy
-        ContainerData d = new ContainerData();
-        d.convoy = data.convoy;
-        d.index = data.convoy.containers.indexOf(b);
-        gameEngine.markedContainersForDestroy.add(d);
+        gameEngine.markedContainersForDestroy.add(data.unit);
 
         // Initiate a new mouse joint with next container
         MouseJointData jointData = new MouseJointData();

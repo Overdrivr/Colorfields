@@ -6,4 +6,5 @@ package com.mygdx.game;
 public class MyBodyData {
     public BodyType type;
     public Convoy convoy;
+    public ConvoyUnit unit;
 }

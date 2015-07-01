@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -13,15 +14,18 @@ import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import java.util.Vector;
 
 /**
  * Created by Bart on 14/06/2015.
  */
-public class Convoy {
+public class Convoy{
     private final GameEngine engine;
-    Vector<Body> containers;
+    Vector<ConvoyUnit> containers;
 
     boolean inCaptureSequence;
 
@@ -36,43 +40,20 @@ public class Convoy {
 
     public Convoy(GameEngine e, Vector2 position, Vector2 orientation, Vector2 force, int amount) {
         engine = e;
-        containers = new Vector<Body>();
+        containers = new Vector<ConvoyUnit>();
         inCaptureSequence = false;
         float angle = (float)(Math.atan2(orientation.x,orientation.y));
-
-        //First sphere
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(position);
-        bodyDef.angle = -angle;
-        Body body = e.world.createBody(bodyDef);
-
-        MyBodyData data = new MyBodyData();
-        data.type = BodyType.BODY_TYPE_ORE;
-        data.convoy = this;
-        body.setUserData(data);
-
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(containerx,containery);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = shape;
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 5.0f;
-        fixtureDef.restitution = 0.6f;
-        body.createFixture(fixtureDef);
-        body.applyLinearImpulse(force, position, true);
-
-        containers.add(body);
-
         orientation.setLength(jointLength);
+        
+        //First character
+        containers.add(new ConvoyUnit(engine,this,1,position,angle,force));
 
-        //All following spheres
+        //All following characters if need
         for(int i = 0 ; i < amount ; i++){
-            bodyDef.position.set(position.x - orientation.x * (i+1), position.y - orientation.y * (i+1));
-            Body body2 = e.world.createBody(bodyDef);
-            body2.setUserData(data);
-            body2.createFixture(fixtureDef);
+
+            Vector2 p  = new Vector2(position.x - orientation.x * (i+1), position.y - orientation.y * (i+1));
+
+            ConvoyUnit c = new ConvoyUnit(engine, this, 0, p, angle, force);
 
             // Revolution joint
             RevoluteJointDef jointDef2 = new RevoluteJointDef();
@@ -81,22 +62,15 @@ public class Convoy {
             jointDef2.upperAngle = convoy_upperAngle;
 
             Vector2 anchor = new Vector2();
-            anchor.x = (containers.lastElement().getPosition().x + body2.getPosition().x)/2;
-            anchor.y = (containers.lastElement().getPosition().y + body2.getPosition().y)/2;
-            // For other joint anchor configuration
-			//anchor.x = containers.lastElement().getPosition().x;
-            //anchor.y = containers.lastElement().getPosition().y;
+            anchor.x = (containers.lastElement().body.getPosition().x + c.body.getPosition().x)/2;
+            anchor.y = (containers.lastElement().body.getPosition().y + c.body.getPosition().y)/2;
 
-            jointDef2.initialize(containers.lastElement(), body2, anchor);
+            jointDef2.initialize(containers.lastElement().body, c.body, anchor);
             Joint j = e.world.createJoint(jointDef2);
 
-            // Apply initial impulse to the body
-            body2.applyLinearImpulse(force, body2.getPosition(), true);
-
-            containers.add(body2);
+            // Store the new ConvoyUnit c
+            containers.add(c);
         }
-
-        shape.dispose();
     }
 
     public void update(GravityField field){
@@ -105,7 +79,7 @@ public class Convoy {
             Vector2 force;
             Color color = new Color(1,1,1,1);
 
-            for(Body c : containers){
+            for(ConvoyUnit c : containers){
                 if(!t){
                     color.r = 0;
                     color.g = 1;
@@ -118,8 +92,8 @@ public class Convoy {
                     color.g = 0;
                     color.b = 0;
                 }
-                force = field.getForce(c.getPosition().x,c.getPosition().y,color);
-                c.applyForce(force,c.getPosition(),true);
+                force = field.getForce(c.body.getPosition().x,c.body.getPosition().y,color);
+                c.body.applyForce(force, c.body.getPosition(), true);
             }
         }
     }
@@ -135,17 +109,16 @@ public class Convoy {
         return result;
     }
 
-    /*
-    TODO : This method should be improved later to create a new convoy if
-    the original convoy gets cut in half
-     */
-    public void DestroyContainer(int index){
-        if(index >= containers.size())
+    public void Remove(ConvoyUnit unit){
+        // Check first that the unit exists
+        if(containers.indexOf(unit) < 0){
+            Gdx.app.log("Convoy","Unit not found");
             return;
-        if(index < 0)
-            return;
+        }
 
-        engine.world.destroyBody(containers.get(index));
-        containers.remove(containers.get(index));
+        engine.world.destroyBody(unit.body);
+        containers.remove(unit);
+        // TODO : If container is cut in half, create a new one and move the objects into it ?
+
     }
 }
