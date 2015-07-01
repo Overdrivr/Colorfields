@@ -44,7 +44,7 @@ public class Convoy{
         inCaptureSequence = false;
         float angle = (float)(Math.atan2(orientation.x,orientation.y));
         orientation.setLength(jointLength);
-        
+
         //First character
         containers.add(new ConvoyUnit(engine,this,1,position,angle,force));
 
@@ -117,6 +117,7 @@ public class Convoy{
         }
 
         engine.world.destroyBody(unit.body);
+        unit.dispose();
         containers.remove(unit);
         // TODO : If container is cut in half, create a new one and move the objects into it ?
 

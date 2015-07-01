@@ -86,4 +86,8 @@ public class ConvoyUnit extends Actor {
         img.setRotation((float) (Math.toDegrees(body.getAngle())));
         img.draw(batch, parentAlpha);
     }
+
+    public void dispose(){
+        this.remove();
+    }
 }
