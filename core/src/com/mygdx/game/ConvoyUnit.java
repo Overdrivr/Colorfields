@@ -90,8 +90,11 @@ public class ConvoyUnit extends Actor {
         sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
         sprite.draw(batch, parentAlpha);
     }
-
+    
     public void dispose(){
+        // Remove from physics
+        engine.world.destroyBody(body);
+        // Remove from display
         this.remove();
     }
 }
