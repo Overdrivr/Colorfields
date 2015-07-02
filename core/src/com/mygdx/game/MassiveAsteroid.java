@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import java.awt.font.TransformAttribute;
@@ -81,8 +82,17 @@ public class MassiveAsteroid extends Actor {
         // Create our body in the world using our body definition
         body = g.world.createBody(bodyDef);
 
+        // convert Array<Vector2> to FloatArray
+        // For some reason the first vertice messes up two different triangulation algorithm
+        // Remove it (maybe the first and last detected points of contour are identical)
+        FloatArray array = new FloatArray();
+        for(int i = 1 ; i < simplified_contour.size ; i++){
+            array.add(simplified_contour.get(i).x);
+            array.add(simplified_contour.get(i).y);
+        }
+
         // Create the polygon shapes from the contour and attach them to the body
-        g.triangulator.BuildShape(body, fixtureDef, simplified_contour);
+        g.triangulator.BuildShape(body, fixtureDef, array);
 
         //Create root node that will take the physical body position and rotation
         root = new Group();
