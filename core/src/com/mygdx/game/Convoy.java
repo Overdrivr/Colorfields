@@ -116,10 +116,17 @@ public class Convoy{
             return;
         }
 
-        engine.world.destroyBody(unit.body);
         unit.dispose();
         containers.remove(unit);
         // TODO : If container is cut in half, create a new one and move the objects into it ?
+    }
 
+    public void Destroy(){
+        // Remove all box2d objects
+        for(ConvoyUnit c : containers)
+        {
+            c.dispose();
+        }
+        containers.clear();
     }
 }
