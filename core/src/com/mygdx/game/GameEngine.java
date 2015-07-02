@@ -67,6 +67,7 @@ public class GameEngine {
 
     public Array<ConvoyUnit> markedContainersForDestroy;
     public Array<MouseJointData> markedMouseJointsToBuild;
+    public Array<Convoy> markedConvoysForDestroy;
 
     // Textures names
     Array<String> imagename_lookup;
@@ -77,6 +78,7 @@ public class GameEngine {
 
     // Constants
     long maxChargeDuration = 1000;
+    float gravity_field_edge_size = 0.5f;
 ////////////////////////////////////////////////////////////////////////////
     public GameEngine(final Stage s, float worldSize){
         stage = s;
@@ -113,6 +115,7 @@ public class GameEngine {
         // Initiate operation queues
         markedContainersForDestroy = new Array<ConvoyUnit>();
         markedMouseJointsToBuild = new Array<MouseJointData>();
+        markedConvoysForDestroy = new Array<Convoy>();
         jointsToBuild = new LinkedList<JointDef>();
 
         convoys = new Vector();
@@ -121,7 +124,7 @@ public class GameEngine {
         endPoint = new EndPoint(this,new Vector2(3, 4),2.5f);
 
         // Grid
-        field = new GravityField(new Vector2(-worldSize/2,-worldSize/2),worldSize,100);
+        field = new GravityField(new Vector2(-worldSize/2,-worldSize/2),gravity_field_edge_size,100);
         field.addSphericalAttractor(new Vector2(-2, -2),new Color(1,0,0,1));
         field.debugDrawGrid = false;
 
@@ -141,6 +144,9 @@ public class GameEngine {
                 new Vector2(-2.f, -0.3f)));
         ores.add(new SphereOre(this, "TestAssets/doublesquare.png",
                 new Vector2(-3.f, 0.6f)));
+
+        // World boundaries
+        WorldLimits limits = new WorldLimits(this,-worldSize/2,worldSize/2,worldSize/2,-worldSize/2,0.5f);
 
         shootingInPreparation = false;
 
@@ -197,6 +203,14 @@ public class GameEngine {
             MouseJoint joint = (MouseJoint) world.createJoint(d.jointDef);
             // Move target point to final point so that the body is attracted to final point
             joint.setTarget(d.jointDef.bodyA.getPosition());
+        }
+
+        // Empty the convoy list
+        while(markedConvoysForDestroy.size > 0){
+            Convoy c = markedConvoysForDestroy.pop();
+            // Destroy the entire convoy
+            c.Destroy();
+
         }
     }
 
@@ -302,4 +316,11 @@ public class GameEngine {
     public int getScore(){
         return score;
     }
+
+    public void convoyReachedWorldLimits(Body b){
+        MyBodyData data = (MyBodyData)(b.getUserData());
+        markedConvoysForDestroy.add(data.convoy);
+        Gdx.app.log("Destroy","D");
+    }
+
 }

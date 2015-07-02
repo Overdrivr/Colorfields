@@ -51,6 +51,16 @@ public class MyContactListener implements ContactListener {
             if(dataB.type == BodyType.BODY_TYPE_CHARACTER && dataA.type == BodyType.BODY_TYPE_END_DESTROY){
                 engine.containerReachedEndpointDestroyArea(B);
             }
+            // Convoy hits world limits
+            if(dataA.type == BodyType.BODY_TYPE_WORLD_LIMITS && dataB.type == BodyType.BODY_TYPE_CHARACTER){
+                engine.convoyReachedWorldLimits(B);
+            }
+            if(dataB.type == BodyType.BODY_TYPE_WORLD_LIMITS && dataA.type == BodyType.BODY_TYPE_CHARACTER){
+                engine.convoyReachedWorldLimits(A);
+            }
+        }
+        else{
+            Gdx.app.error("MyContactListener","Some object does not carry user data");
         }
     }
 
