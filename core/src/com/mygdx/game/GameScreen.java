@@ -88,7 +88,7 @@ public class GameScreen implements Screen {
     float zoomDefault = 0.005f;
 
     ////////////////////////////////////  Level constants
-    float worldSize = 20.f;
+    float worldSize = 50.f;
     float camerabound_plus_x = worldSize/2.f;
     float camerabound_minus_x = -worldSize/2.f;
     float camerabound_plus_y = worldSize/2.f;
