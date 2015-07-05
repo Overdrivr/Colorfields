@@ -1,13 +1,10 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 
 /**
  * Created by Bart on 02/07/2015.
@@ -43,6 +40,7 @@ public class WorldLimits {
         fixtureDef.density = 0.5f;
         fixtureDef.friction = 0.8f;
         fixtureDef.restitution = 0.6f; // Make it bounce a little bit
+        fixtureDef.isSensor = true;
 
         // Create our body in the world using our body definition
         Body body = engine.world.createBody(bodyDef);

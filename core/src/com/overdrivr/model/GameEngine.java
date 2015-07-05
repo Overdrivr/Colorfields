@@ -1,10 +1,10 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -18,16 +18,29 @@ import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.overdrivr.tools.ContourToPolygons;
+import com.overdrivr.tools.PNGtoBox2D;
+import com.overdrivr.tools.b2Separator;
 
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Vector;
 
+import box2dLight.PointLight;
+import box2dLight.RayHandler;
+
 /**
  * Created by Bart on 03/05/2015.
+ *
+ * MODEL in M(VC) architecture
  */
 
 public class GameEngine {
+
+    Assets assets;
+
+    public float worldSize = 50.f;
+
 
     //PHYSICS
     public World world;
@@ -35,12 +48,24 @@ public class GameEngine {
     private Vector<Convoy> convoys;
     Vector2 cannonPosition;
     private EndPoint endPoint;
+    float spent_time;
 
     b2Separator splitter;
     ContourToPolygons triangulator;
 
     public GravityField field;
     MyContactListener contactListener;
+
+    /////////////////////////////////////////
+    // 3D RENDER
+
+    ModelBatch modelBatch;
+
+    Array<Static3DAsteroid> asteroids;
+
+
+    ///////////////////////////////////////////
+    // XXXX
 
     //Image processing
     PNGtoBox2D converter;
@@ -69,6 +94,9 @@ public class GameEngine {
     public Array<MouseJointData> markedMouseJointsToBuild;
     public Array<Convoy> markedConvoysForDestroy;
 
+    RayHandler rayHandler;
+    PointLight light;
+
     // Textures names
     Array<String> imagename_lookup;
 
@@ -80,13 +108,15 @@ public class GameEngine {
     long maxChargeDuration = 1000;
     float gravity_field_edge_size = 0.5f;
 ////////////////////////////////////////////////////////////////////////////
-    public GameEngine(final Stage s, float worldSize){
-        stage = s;
+    public GameEngine(){
+        Assets assets = new Assets();
 
         // Init image lookup table
         imagename_lookup = new Array<String>();
         imagename_lookup.add("default.png");
         imagename_lookup.add("Characters/1.png");
+
+        modelBatch = new ModelBatch();
 
         //Init tools
         converter = new PNGtoBox2D();
@@ -96,6 +126,8 @@ public class GameEngine {
         renderer = new ShapeRenderer();
         rnd = new Random();
         initLevel(worldSize);
+
+        spent_time = 0;
     }
 
     private void initLevel(float worldSize){
@@ -133,8 +165,16 @@ public class GameEngine {
 
         // Massive asteroids
         massiveAsteroids = new Array<MassiveAsteroid>();
-        massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A1_red.png",new Vector2(0,0),0.03f));
+        //massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A1_red.png",new Vector2(0,0),0.03f));
+        massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/asteroid_1.png",new Vector2(0,0),0.03f));
         massiveAsteroids.add(new MassiveAsteroid(this,"Asteroids/A2_orange.png",new Vector2(-20,1.5f),0.03f));
+
+        // Lights - DEBUG
+        rayHandler = new RayHandler(world);
+        rayHandler.setAmbientLight(0.7f);
+        rayHandler.setShadows(false);
+        light = new PointLight(rayHandler, 500, new Color(1,0,1,1), 2.f, 0, 0);
+        //DirectionalLight lightGlobal = new DirectionalLight(rayHandler,500,new Color(0.05f,0.05f,0.05f,1),45);
 
         // Small asteroids
         ores = new Array<SphereOre>();
@@ -145,12 +185,25 @@ public class GameEngine {
         ores.add(new SphereOre(this, "TestAssets/doublesquare.png",
                 new Vector2(-3.f, 0.6f)));
 
+        // 3D asteroids
+        asteroids = new Array<Static3DAsteroid>();
+        asteroids.add(new Static3DAsteroid(this));
+
         // World boundaries
         WorldLimits limits = new WorldLimits(this,-worldSize/2,worldSize/2,worldSize/2,-worldSize/2,0.5f);
 
         shootingInPreparation = false;
 
         chrono = new TimeUtils();
+    }
+
+    public void render(){
+        modelBatch.begin(stage.getCamera());
+
+        for(Static3DAsteroid a : asteroids)
+            a.render(modelBatch);
+
+        modelBatch.end();
     }
 
     public void doPhysicsStep(float deltaTime) {
@@ -212,6 +265,13 @@ public class GameEngine {
             c.Destroy();
 
         }
+
+        spent_time += deltaTime;
+        float x = (float)(Math.sin(spent_time))*0.3f+3.f;
+        float y = (float)(Math.cos(spent_time))*0.3f+1.f;
+        light.setPosition(x,y);
+        rayHandler.setCombinedMatrix(stage.getCamera().combined);
+        rayHandler.updateAndRender();
     }
 
     private void updateFields(){
@@ -321,6 +381,13 @@ public class GameEngine {
         MyBodyData data = (MyBodyData)(b.getUserData());
         markedConvoysForDestroy.add(data.convoy);
         Gdx.app.log("Destroy","D");
+    }
+
+    public void dispose(){
+        rayHandler.dispose();
+        assets.dispose();
+        for(Static3DAsteroid a : asteroids)
+            a.dispose();
     }
 
 }

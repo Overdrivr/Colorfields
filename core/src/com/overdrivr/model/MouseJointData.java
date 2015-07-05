@@ -1,4 +1,4 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;

@@ -1,4 +1,4 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -9,15 +9,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.utils.Array;
-
-import java.awt.Polygon;
 
 /**
  * Created by Bart on 16/05/2015.
@@ -31,6 +27,16 @@ public class SphereOre extends Actor{
     Sprite sprite;
     public Body body;
     Group root;
+
+    //EFFECTS
+    /*private ParticleEffect effect;
+
+    //PARTICLE EFFECTS
+    effect = new ParticleEffect();
+    effect.load(Gdx.files.internal("Particles/green_peaceful_flame"), Gdx.files.internal("Particles"));
+    effect.setPosition(300, 300);
+    effect.findEmitter("Fire").setContinuous(true);
+    effect.start();*/
 
     public SphereOre(final GameEngine game, String filename, Vector2 position){
         g = game;

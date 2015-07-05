@@ -1,6 +1,5 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -11,9 +10,6 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /**
@@ -23,10 +19,10 @@ public class ConvoyUnit extends Actor {
     Sprite sprite;
     private final GameEngine engine;
     int unit_type;
-    Convoy convoy;
+    com.overdrivr.model.Convoy convoy;
     public Body body;
 
-    public ConvoyUnit(GameEngine e, Convoy c, int type, Vector2 position,
+    public ConvoyUnit(GameEngine e, com.overdrivr.model.Convoy c, int type, Vector2 position,
                       float angle, Vector2 initialImpulse){
         engine = e;
         unit_type = type;

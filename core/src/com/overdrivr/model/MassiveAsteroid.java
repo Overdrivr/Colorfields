@@ -1,11 +1,8 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -18,14 +15,11 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-import java.awt.font.TransformAttribute;
-
 /**
  * Created by Bart on 14/05/2015.
  */
 public class MassiveAsteroid extends Actor {
     final GameEngine g;
-
     public Body body;
     Group root;
 
