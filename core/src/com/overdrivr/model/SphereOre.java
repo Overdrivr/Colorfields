@@ -91,29 +91,34 @@ public class SphereOre extends Actor{
             fixtureDef.shape = shape;
             body.createFixture(fixtureDef);
 
-            g.stage.addActor(this);
+            //g.stage.addActor(this);
 
             //Intermediate node that will handle rotation around physical body
-            root = new Group();
-            root.setTransform(true);
-            g.stage.addActor(root);
+            //root = new Group();
+            //root.setTransform(true);
+            //g.stage.addActor(root);
 
             //Asset attached to group
-            Texture t1 = new Texture(Gdx.files.internal(filename));
+            /*Texture t1 = new Texture(Gdx.files.internal(filename));
             TextureRegion t = new TextureRegion(t1);
             t.flip(false,true);
             asset = new Image(t);
             asset.setScale(0.01f);
             //asset.setPosition(0,0,0);
             //Gdx.app.log("Asset size", Float.toString() + " " + Float.toString());
-            root.addActor(asset);
+            root.addActor(asset);*/
+
+            sprite.setOriginCenter();// Utile ?
         }
     }
 
     public void draw(Batch batch, float parentAlpha){
         //root.setPosition(body.getWorldCenter().x, body.getWorldCenter().y);
-        root.setPosition(body.getPosition().x,body.getPosition().y);
+        /*root.setPosition(body.getPosition().x,body.getPosition().y);
         root.setRotation((float) (Math.toDegrees(body.getAngle())));
-        root.draw(batch, parentAlpha);
+        root.draw(batch, parentAlpha);*/
+        sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
+        sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
+        sprite.draw(batch, parentAlpha);
     }
 }

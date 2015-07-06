@@ -3,6 +3,8 @@ package com.overdrivr.model;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -21,12 +23,13 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 public class MassiveAsteroid extends Actor {
     final GameEngine g;
     public Body body;
-    Group root;
+    //Group root;
 
     Pixmap pixmap;
     Texture texture;
     TextureRegion textureRegion;
-    Image image;
+    Sprite sprite;
+    //Image image;
 
     public MassiveAsteroid(final GameEngine game, String filename, Vector2 position, float distance){
         g = game;
@@ -43,11 +46,7 @@ public class MassiveAsteroid extends Actor {
         texture = new Texture(pixmap);
         textureRegion = new TextureRegion(texture);
         textureRegion.flip(false,true);
-        image = new Image(textureRegion);
-        image.setScale(0.01f);
-
-        // Attach the class to the stage
-        g.stage.addActor(this);
+        sprite = new Sprite(texture);
 
         //Detect contour from pixmap
         Array<Vector2> raw_contour = g.converter.marchingSquares(pixmap);
@@ -88,20 +87,15 @@ public class MassiveAsteroid extends Actor {
         // Create the polygon shapes from the contour and attach them to the body
         g.triangulator.BuildShape(body, fixtureDef, array);
 
-        //Create root node that will take the physical body position and rotation
-        root = new Group();
-        root.setTransform(true);
-        g.stage.addActor(root);
 
-        //Attach image to root node
-        root.addActor(image);
+        sprite.setScale(0.01f);
+        sprite.setOriginCenter();// Utile ?
     }
 
-    public void draw(Batch batch, float parentAlpha){
-
-        root.setPosition(body.getPosition().x, body.getPosition().y);
-        root.setRotation((float) (Math.toDegrees(body.getAngle())));
-        root.draw(batch, parentAlpha);
+    public void draw(SpriteBatch batch){
+        sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
+        sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
+        sprite.draw(batch);
     }
 
     // Dispose () ? Remove the root and image from stage

@@ -5,12 +5,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.overdrivr.model.GameEngine;
 import java.util.Locale;
 
 
 public class MyGdxGame extends Game {
-    public SpriteBatch batch;
+    public SpriteBatch batch2D;
+    public ModelBatch batch3D;
     public BitmapFont font;
     public Locale locale;
     public GameEngine engine;
@@ -18,7 +20,8 @@ public class MyGdxGame extends Game {
     @Override
     public void create () {
 
-        batch = new SpriteBatch();
+        batch2D = new SpriteBatch();
+        batch3D = new ModelBatch();
 
         // Fonts
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Roboto_v1.2/RobotoCondensed/RobotoCondensed-Light.ttf"));
@@ -43,7 +46,8 @@ public class MyGdxGame extends Game {
 
     public void dispose(){
         engine.dispose();
-        batch.dispose();
+        batch2D.dispose();
+        batch3D.dispose();
         font.dispose();
     }
 }

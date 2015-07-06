@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -36,12 +37,13 @@ import java.util.Locale;
 /**
  * Created by Bart on 26/04/2015.
  */
-public class GameScreen implements Screen {
+public class GameScreen extends ScreenAdapter {
 
     public final MyGdxGame topApplication;
     public final GameEngine engine;
     public I18NBundle myBundle;
     FillViewport viewport;
+    OrthographicCamera camera;
 
     Stage hudStage;
     Table table;
@@ -65,6 +67,7 @@ public class GameScreen implements Screen {
     float camerabound_minus_x = -100.f;
     float camerabound_plus_y = 100.f;
     float camerabound_minus_y = -100.f;
+    final float alpha = 0.81f;
     float worldSize;
     Vector2 cameraSpeed;
 
@@ -82,18 +85,18 @@ public class GameScreen implements Screen {
 
         cameraSpeed = new Vector2(0,0);
 
-        // Stage controls the rendering process
+        camera = new OrthographicCamera();
+        camera.zoom = zoomDefault;
+        camera.near = 100.f;
+        camera.far = -100.f;
+        camera.update();
+        camera.position.set(0,0,0);
+
         // Viewports helps managing the camera render area in function of the device
-        viewport = new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-        stage = new Stage(viewport,g.batch);
-        stage.getCamera().translate(-Gdx.graphics.getWidth()/2.f,-Gdx.graphics.getHeight()/2.f,0.f);
-        ((OrthographicCamera)this.stage.getCamera()).zoom = zoomDefault;
-        stage.getCamera().far = -100.f;
-        stage.getCamera().near = 100.f;
-        stage.getCamera().update();
+        viewport = new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),camera);
 
         // UI
-        hudStage = new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()),g.batch);
+        hudStage = new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()),topApplication.batch2D);
         //Compute padding
         //TODO : to use
         float padding = Gdx.graphics.getHeight()/20;
@@ -115,8 +118,7 @@ public class GameScreen implements Screen {
         table.add(score).expandX();
 
         // High level interpretation of gesture
-        MyGestureListener gestureListener = new MyGestureListener();
-        gestureListener.setGamescreen(this);
+        MyGestureListener gestureListener = new MyGestureListener(this);
         // Just to know when touch down has been pressed
         MyGestureDetector detector = new MyGestureDetector(gestureListener,this);
         detector.setLongPressSeconds(0.4f);
@@ -124,7 +126,7 @@ public class GameScreen implements Screen {
         // Multiplexing the events to the app's different UI layers
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(hudStage);
-        multiplexer.addProcessor(stage);
+        //multiplexer.addProcessor(stage);
         multiplexer.addProcessor(detector);
         Gdx.input.setInputProcessor(multiplexer);
 
@@ -137,95 +139,63 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        //Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClearColor(0.f, 0.f, 0.f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         // Let camera slide at the end of the fling
-        stage.getCamera().translate(cameraSpeed.x * delta, cameraSpeed.y * delta, 0.f);
-        final float alpha = 0.81f;
+        camera.translate(cameraSpeed.x * delta, cameraSpeed.y * delta, 0.f);
         // Increase alpha when zoom has a low value (big zoom)
         cameraSpeed.x *= alpha;
         cameraSpeed.y *= alpha;
+        camera.update();
 
-        stage.act(delta);
-        stage.getCamera().update();
-        debugDraw(stage.getCamera().combined);
-        stage.draw();
+        debugDraw(camera.combined);
 
-        //debugRenderer.render(engine.world, stage.getViewport().getCamera().combined);
+        updateUI();
 
-        engine.doPhysicsStep(delta);
-
-        engine.render();
-
+        engine.update(delta);
         hudStage.act(delta);
-        hudStage.draw();
 
+        engine.render(topApplication.batch3D, topApplication.batch2D,camera);
+
+        debugRenderer.render(engine.world, camera.combined);
+        hudStage.draw();
+    }
+
+    public void updateUI(){
+        // Update charging bar
         float force = engine.getChargePercent();
         bar.setValue(force);
-
         score.setText(Integer.toString(engine.getScore()));
     }
 
-    public Vector2 screenVectorToWorld(Vector2 velocity){
-        Vector2 start = stage.getViewport().unproject(new Vector2(0,0));
-        Vector2 end = stage.getViewport().unproject(velocity);
-
-        // Compute speed in world coordinates to account for zoom levels
-        Vector2 diff = start.mulAdd(end, -1);
-
-        return diff;
-    }
-
-
     @Override
     public void resize(int x, int y){
-        stage.getViewport().update(x, y, false);
+        viewport.update(x, y, false);
         hudStage.getViewport().update(x,y,false);
     }
 
     @Override
-    public void show(){
-
-    }
-
-    @Override
-    public void hide(){
-        //Nothing to do at screen stop
-    }
-
-    @Override
-    public void pause(){
-        //Nothing to do at screen pause
-    }
-
-    @Override
-    public void resume(){
-        //Nothing to do at screen resume
-    }
-
-    @Override
     public void dispose(){
-        stage.dispose();
+        //stage.dispose();
         hudStage.dispose();
         shapeRenderer.dispose();
     }
 
     public void touchUpAction(float x, float y){
-        Vector2 v = stage.getViewport().unproject(new Vector2(x,y));
+        Vector2 v = viewport.unproject(new Vector2(x,y));
         engine.endCharge(v.x, v.y);
     }
 
     public void longPressAction(float x, float y){
-        Vector2 w = stage.getViewport().unproject(new Vector2(x, y));
+        Vector2 w = viewport.unproject(new Vector2(x, y));
         engine.startCharge();
     }
 
     //EVENTS
     //Used to store initial zoom
     public void TouchDown(){
-        initial_zoom = ((OrthographicCamera)this.stage.getCamera()).zoom;
+        initial_zoom = camera.zoom;
         cameraSpeed.x = 0;
         cameraSpeed.y = 0;
         engine.cancelCharge();
@@ -239,14 +209,18 @@ public class GameScreen implements Screen {
     public void Pan(Vector2 start, Vector2 end)
     {
         // Translate start and end position from screen to world
-        Vector2 start_world = stage.getViewport().unproject(start);
-        Vector2 end_world = stage.getViewport().unproject(end);
+        Vector2 start_world = viewport.unproject(start);
+        Vector2 end_world = viewport.unproject(end);
         // Compute delta in world coordinates
         // So that, no matter the zoom the physical move of the finger
         // will correspond to the same translation in the world
         Vector2 diff = start_world.mulAdd(end_world,-1);
 
-        stage.getCamera().translate(diff.x,diff.y,0.f);
+        camera.translate(diff.x,diff.y,0.f);
+
+        //Gdx.app.log("GameScreen", "Start(" + start_world.x + " ; " + start_world.y + ")");
+        //Gdx.app.log("GameScreen", "Stop(" + end_world.x + " ; " + end_world.y + ")");
+        //Gdx.app.log("GameScreen",camera.position.x+" ; "+camera.position.y);
 
         // Prevent camera from going outside world
         // TODO : Use frustum to compute edge location at game plane level
@@ -254,8 +228,8 @@ public class GameScreen implements Screen {
     }
 
     public void Fling(float velocityX, float velocityY){
-        Vector2 start = stage.getViewport().unproject(new Vector2(0,0));
-        Vector2 end = stage.getViewport().unproject(new Vector2(velocityX,velocityY));
+        Vector2 start = viewport.unproject(new Vector2(0,0));
+        Vector2 end = viewport.unproject(new Vector2(velocityX,velocityY));
 
         // Compute speed in world coordinates to account for zoom levels
         Vector2 diff = start.mulAdd(end, -1);
@@ -268,7 +242,7 @@ public class GameScreen implements Screen {
     {
         float ratio = originalDistance / currentDistance;
         float final_zoom = MathUtils.clamp(initial_zoom * ratio, zoomMin, zoomMax);
-        ((OrthographicCamera)this.stage.getCamera()).zoom = final_zoom;
+        camera.zoom = final_zoom;
     }
 
     public void debugDraw(Matrix4 combined){

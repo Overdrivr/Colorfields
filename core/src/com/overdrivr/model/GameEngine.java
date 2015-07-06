@@ -2,9 +2,12 @@ package com.overdrivr.model;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -37,55 +40,47 @@ import box2dLight.RayHandler;
 
 public class GameEngine {
 
-    Assets assets;
-
-    public float worldSize = 50.f;
-
-
-    //PHYSICS
+    //////// Game objects
     public World world;
-    private float accumulator = 0;
+    private MyContactListener contactListener;
     private Vector<Convoy> convoys;
-    Vector2 cannonPosition;
+    // TODO : Create startpoint class
     private EndPoint endPoint;
-    float spent_time;
+    public GravityField field;
+    private Array<Static3DAsteroid> asteroids;
+    private Array<MassiveAsteroid> massiveAsteroids;
+    private Array<SphereOre> ores;
+    private RayHandler rayHandler;
+    private PointLight light;
+    Array<String> imagename_lookup;
 
+    /////// Game variables
+    private float accumulator = 0;
+    private int score = 0;
+    private float spent_time;
+    private boolean shootingInPreparation;
+    private TimeUtils chrono;
+    private long startingTime;
+
+    /////// Game constants
+    long maxChargeDuration = 1000;
+    float gravity_field_edge_size = 0.5f;
+
+    ////// Game parameters
+    public float worldSize = 50.f;
+    public Vector2 cannonPosition;
+
+    /////// Tools
     b2Separator splitter;
     ContourToPolygons triangulator;
-
-    public GravityField field;
-    MyContactListener contactListener;
-
-    /////////////////////////////////////////
-    // 3D RENDER
-
-    ModelBatch modelBatch;
-
-    Array<Static3DAsteroid> asteroids;
-
-
-    ///////////////////////////////////////////
-    // XXXX
-
-    //Image processing
     PNGtoBox2D converter;
-
+    Random rnd;
     AssetManager assetManager;
 
-    //Game objects
-    Stage stage;
-    public Array<MassiveAsteroid> massiveAsteroids;
-    public Array<SphereOre> ores;
-    boolean shootingInPreparation;
-
-    TimeUtils chrono;
-    long startingTime;
-
-    Random rnd;
-
-    //debug objects
+    ////// Debug objects
     ShapeRenderer renderer;
 
+    ////// Operation queues
     public LinkedList<Joint> joints;
     public LinkedList<Body> bodiesToDestroy;
     public LinkedList<JointDef> jointsToBuild;
@@ -94,37 +89,22 @@ public class GameEngine {
     public Array<MouseJointData> markedMouseJointsToBuild;
     public Array<Convoy> markedConvoysForDestroy;
 
-    RayHandler rayHandler;
-    PointLight light;
-
-    // Textures names
-    Array<String> imagename_lookup;
 
 
-    // player properties
-    int score = 0;
-
-    // Constants
-    long maxChargeDuration = 1000;
-    float gravity_field_edge_size = 0.5f;
-////////////////////////////////////////////////////////////////////////////
     public GameEngine(){
-        Assets assets = new Assets();
 
         // Init image lookup table
         imagename_lookup = new Array<String>();
         imagename_lookup.add("default.png");
         imagename_lookup.add("Characters/1.png");
 
-        modelBatch = new ModelBatch();
-
         //Init tools
         converter = new PNGtoBox2D();
         splitter = new b2Separator();
         triangulator = new ContourToPolygons();
-        assetManager = new AssetManager();
         renderer = new ShapeRenderer();
         rnd = new Random();
+        assetManager = new AssetManager();
         initLevel(worldSize);
 
         spent_time = 0;
@@ -197,13 +177,28 @@ public class GameEngine {
         chrono = new TimeUtils();
     }
 
-    public void render(){
-        modelBatch.begin(stage.getCamera());
+    public void render(ModelBatch batch3d,SpriteBatch batch2d,Camera camera){
 
+        batch3d.begin(camera);
         for(Static3DAsteroid a : asteroids)
-            a.render(modelBatch);
+            a.render(batch3d);
+        batch3d.end();
 
-        modelBatch.end();
+        batch2d.setProjectionMatrix(camera.combined);
+        batch2d.begin();
+        for(Convoy c : convoys)
+            c.draw(batch2d);
+
+        for(MassiveAsteroid a : massiveAsteroids)
+            a.draw(batch2d);
+        batch2d.end();
+
+        rayHandler.setCombinedMatrix(camera.combined);
+        rayHandler.updateAndRender();
+    }
+
+    public void update(float deltaTime){
+        doPhysicsStep(deltaTime);
     }
 
     public void doPhysicsStep(float deltaTime) {
@@ -270,8 +265,6 @@ public class GameEngine {
         float x = (float)(Math.sin(spent_time))*0.3f+3.f;
         float y = (float)(Math.cos(spent_time))*0.3f+1.f;
         light.setPosition(x,y);
-        rayHandler.setCombinedMatrix(stage.getCamera().combined);
-        rayHandler.updateAndRender();
     }
 
     private void updateFields(){
@@ -385,7 +378,7 @@ public class GameEngine {
 
     public void dispose(){
         rayHandler.dispose();
-        assets.dispose();
+        assetManager.dispose();
         for(Static3DAsteroid a : asteroids)
             a.dispose();
     }

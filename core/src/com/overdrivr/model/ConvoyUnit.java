@@ -22,7 +22,7 @@ public class ConvoyUnit extends Actor {
     com.overdrivr.model.Convoy convoy;
     public Body body;
 
-    public ConvoyUnit(GameEngine e, com.overdrivr.model.Convoy c, int type, Vector2 position,
+    public ConvoyUnit(GameEngine e, Convoy c, int type, Vector2 position,
                       float angle, Vector2 initialImpulse){
         engine = e;
         unit_type = type;
@@ -78,13 +78,13 @@ public class ConvoyUnit extends Actor {
         sprite.setOriginCenter();// Utile ?
 
         // Attach the image to the stage
-        engine.stage.addActor(this);
+        //engine.stage.addActor(this);
     }
 
-    public void draw(Batch batch, float parentAlpha) {
+    public void draw(Batch batch2D) {
         sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
         sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
-        sprite.draw(batch, parentAlpha);
+        sprite.draw(batch2D);
     }
     
     public void dispose(){

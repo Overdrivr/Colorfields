@@ -2,6 +2,7 @@ package com.overdrivr.model;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Joint;
@@ -87,15 +88,9 @@ public class Convoy{
         }
     }
 
-    private Vector2 ortho(Vector2 a, boolean left){
-        Vector3 u = new Vector3(a.x,a.y,0);
-        Vector3 v = left ? new Vector3(0,0,1) : new Vector3(0,0,-1);
-
-        Vector2 result = new Vector2();
-        result.x = u.y * v.z - u.z * v.y;
-        result.y = u.z * v.x - u.x * v.z;
-
-        return result;
+    public void draw(SpriteBatch batch2D){
+        for(ConvoyUnit u : containers)
+            u.draw(batch2D);
     }
 
     public void Remove(ConvoyUnit unit){
