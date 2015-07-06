@@ -1,5 +1,6 @@
 package com.overdrivr.model;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -46,7 +47,7 @@ public class MassiveAsteroid extends Actor {
         texture = new Texture(pixmap);
         textureRegion = new TextureRegion(texture);
         textureRegion.flip(false,true);
-        sprite = new Sprite(texture);
+        sprite = new Sprite(textureRegion);
 
         //Detect contour from pixmap
         Array<Vector2> raw_contour = g.converter.marchingSquares(pixmap);
@@ -87,13 +88,13 @@ public class MassiveAsteroid extends Actor {
         // Create the polygon shapes from the contour and attach them to the body
         g.triangulator.BuildShape(body, fixtureDef, array);
 
-
+        sprite.setOrigin(0,0);
         sprite.setScale(0.01f);
-        sprite.setOriginCenter();// Utile ?
     }
 
     public void draw(SpriteBatch batch){
-        sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
+        //sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
+        sprite.setPosition(body.getPosition().x, body.getPosition().y);
         sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
         sprite.draw(batch);
     }
