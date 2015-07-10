@@ -1,22 +1,12 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Joint;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import java.util.Vector;
 
@@ -25,7 +15,7 @@ import java.util.Vector;
  */
 public class Convoy{
     private final GameEngine engine;
-    Vector<ConvoyUnit> containers;
+    public Vector<ConvoyUnit> containers;
 
     boolean inCaptureSequence;
 
@@ -98,15 +88,9 @@ public class Convoy{
         }
     }
 
-    private Vector2 ortho(Vector2 a, boolean left){
-        Vector3 u = new Vector3(a.x,a.y,0);
-        Vector3 v = left ? new Vector3(0,0,1) : new Vector3(0,0,-1);
-
-        Vector2 result = new Vector2();
-        result.x = u.y * v.z - u.z * v.y;
-        result.y = u.z * v.x - u.x * v.z;
-
-        return result;
+    public void draw(SpriteBatch batch2D){
+        for(ConvoyUnit u : containers)
+            u.draw(batch2D);
     }
 
     public void Remove(ConvoyUnit unit){
@@ -116,10 +100,17 @@ public class Convoy{
             return;
         }
 
-        engine.world.destroyBody(unit.body);
         unit.dispose();
         containers.remove(unit);
         // TODO : If container is cut in half, create a new one and move the objects into it ?
+    }
 
+    public void Destroy(){
+        // Remove all box2d objects
+        for(ConvoyUnit c : containers)
+        {
+            c.dispose();
+        }
+        containers.clear();
     }
 }

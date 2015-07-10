@@ -1,40 +1,42 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.overdrivr.model.GameEngine;
+import java.util.Locale;
 
-import java.io.File;
 
 public class MyGdxGame extends Game {
-    public SpriteBatch batch;
+    public SpriteBatch batch2D;
+    public ModelBatch batch3D;
     public BitmapFont font;
-
+    public Locale locale;
+    public GameEngine engine;
 
     @Override
     public void create () {
 
-        batch = new SpriteBatch();
-        //USE ROBOTO INSTEAD
-        //font = new BitmapFont();
-        //font.setScale(3.f);
+        batch2D = new SpriteBatch();
+        batch3D = new ModelBatch();
+
+        // Fonts
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Roboto_v1.2/RobotoCondensed/RobotoCondensed-Light.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 80;
         font = generator.generateFont(parameter); // font size 12 pixels
-        generator.dispose(); // don't forget to dispose to avoid memory leaks!
+        generator.dispose();
 
-        // Load file levels
-        // TODO Must be moved to the StartupScreen
-        FileHandle leveldata = Gdx.files.internal("Levels/level_111.xml");
-        FileHandle globaldata = Gdx.files.internal("Values/global_constants.properties");
-        this.setScreen(new GameScreen(this,globaldata,leveldata));
+        //Internalization (English default for now)
+        locale = new Locale("en", "GB");
+
+        //Init game engine
+        engine = new GameEngine();
+
+        this.setScreen(new GameScreen(this));
     }
 
     @Override
@@ -43,7 +45,9 @@ public class MyGdxGame extends Game {
     }
 
     public void dispose(){
-        batch.dispose();
+        engine.dispose();
+        batch2D.dispose();
+        batch3D.dispose();
         font.dispose();
     }
 }

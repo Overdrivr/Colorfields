@@ -1,4 +1,4 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -9,15 +9,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.utils.Array;
-
-import java.awt.Polygon;
 
 /**
  * Created by Bart on 16/05/2015.
@@ -31,6 +27,16 @@ public class SphereOre extends Actor{
     Sprite sprite;
     public Body body;
     Group root;
+
+    //EFFECTS
+    /*private ParticleEffect effect;
+
+    //PARTICLE EFFECTS
+    effect = new ParticleEffect();
+    effect.load(Gdx.files.internal("Particles/green_peaceful_flame"), Gdx.files.internal("Particles"));
+    effect.setPosition(300, 300);
+    effect.findEmitter("Fire").setContinuous(true);
+    effect.start();*/
 
     public SphereOre(final GameEngine game, String filename, Vector2 position){
         g = game;
@@ -85,29 +91,34 @@ public class SphereOre extends Actor{
             fixtureDef.shape = shape;
             body.createFixture(fixtureDef);
 
-            g.stage.addActor(this);
+            //g.stage.addActor(this);
 
             //Intermediate node that will handle rotation around physical body
-            root = new Group();
-            root.setTransform(true);
-            g.stage.addActor(root);
+            //root = new Group();
+            //root.setTransform(true);
+            //g.stage.addActor(root);
 
             //Asset attached to group
-            Texture t1 = new Texture(Gdx.files.internal(filename));
+            /*Texture t1 = new Texture(Gdx.files.internal(filename));
             TextureRegion t = new TextureRegion(t1);
             t.flip(false,true);
             asset = new Image(t);
             asset.setScale(0.01f);
             //asset.setPosition(0,0,0);
             //Gdx.app.log("Asset size", Float.toString() + " " + Float.toString());
-            root.addActor(asset);
+            root.addActor(asset);*/
+
+            sprite.setOriginCenter();// Utile ?
         }
     }
 
     public void draw(Batch batch, float parentAlpha){
         //root.setPosition(body.getWorldCenter().x, body.getWorldCenter().y);
-        root.setPosition(body.getPosition().x,body.getPosition().y);
+        /*root.setPosition(body.getPosition().x,body.getPosition().y);
         root.setRotation((float) (Math.toDegrees(body.getAngle())));
-        root.draw(batch, parentAlpha);
+        root.draw(batch, parentAlpha);*/
+        sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
+        sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
+        sprite.draw(batch, parentAlpha);
     }
 }

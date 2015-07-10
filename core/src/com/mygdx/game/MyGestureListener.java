@@ -8,9 +8,10 @@ import com.badlogic.gdx.math.Vector2;
  * Created by Bart on 26/04/2015.
  */
 public class MyGestureListener implements GestureDetector.GestureListener {
-    GameScreen gamescreen;
+    private final GameScreen gamescreen;
 
-    public void setGamescreen(final GameScreen screen){
+    public MyGestureListener(GameScreen screen){
+        super();
         gamescreen = screen;
     }
 

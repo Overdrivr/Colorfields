@@ -1,4 +1,4 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -28,7 +28,7 @@ public class GravityField {
         forces_blue = new Vector2[amount][amount];
         forces_green = new Vector2[amount][amount];
 
-        unitsize = edgesize/amount;
+        unitsize = edgesize;
         gridcenter = center;
         cellamount = amount;
         debugDrawForces = true;

@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -11,24 +12,12 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.input.GestureDetector;
 
-import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
@@ -39,37 +28,23 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.I18NBundle;
 import com.badlogic.gdx.utils.viewport.FillViewport;
+import com.overdrivr.model.GameEngine;
 
-import java.beans.XMLEncoder;
-import java.io.File;
-import java.util.Iterator;
 import java.util.Locale;
-import java.util.Random;
-import java.util.Vector;
 
 /**
  * Created by Bart on 26/04/2015.
  */
-public class GameScreen implements Screen {
+public class GameScreen extends ScreenAdapter {
 
-    final MyGdxGame game;
-
-    FillViewport viewport;
-    Vector2 cameraSpeed;
-    float initial_zoom;
-
-    //EFFECTS
-    private ParticleEffect effect;
-
-    //Internationalization
+    public final MyGdxGame topApplication;
+    public final GameEngine engine;
     public I18NBundle myBundle;
+    FillViewport viewport;
+    OrthographicCamera camera;
 
-    Stage stage;
     Stage hudStage;
     Table table;
     Skin skin;
@@ -80,53 +55,48 @@ public class GameScreen implements Screen {
     private ShapeRenderer shapeRenderer;
     private Box2DDebugRenderer debugRenderer;
 
-    public GameEngine engine;
+
+    float initial_zoom;
 
     ///////////////////////////////////// Global constants
+    // TODO : Retrieve these values from Model
     float zoomMin = 0.001f;
     float zoomMax = 0.05f;
     float zoomDefault = 0.005f;
+    float camerabound_plus_x = 100.f;
+    float camerabound_minus_x = -100.f;
+    float camerabound_plus_y = 100.f;
+    float camerabound_minus_y = -100.f;
+    final float alpha = 0.81f;
+    float worldSize;
+    Vector2 cameraSpeed;
 
-    ////////////////////////////////////  Level constants
-    float worldSize = 50.f;
-    float camerabound_plus_x = worldSize/2.f;
-    float camerabound_minus_x = -worldSize/2.f;
-    float camerabound_plus_y = worldSize/2.f;
-    float camerabound_minus_y = -worldSize/2.f;
 
-    /*
-        GameScreen is started on level startup
-     */
+    public GameScreen(final MyGdxGame g) {
 
-    public GameScreen(final MyGdxGame g, FileHandle globalParameters, FileHandle leveldata) {
+        topApplication = g;
+        engine = topApplication.engine;
+        worldSize = engine.worldSize;
 
-        game = g;
+        FileHandle baseFileHandle = Gdx.files.internal("I18N/GameScreenBundle");
+        myBundle = I18NBundle.createBundle(baseFileHandle, topApplication.locale);
+
         initSkin();
 
-        // Load global parameters
-
-        // Load level data
-        loadLevelData(leveldata);
-
-        // Stage controls the rendering process
-        // Viewports helps managing the camera render aera in function of the device
-        viewport = new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-        stage = new Stage(viewport,g.batch);
-        stage.getCamera().translate(-Gdx.graphics.getWidth()/2.f,-Gdx.graphics.getHeight()/2.f,0.f);
-        ((OrthographicCamera)this.stage.getCamera()).zoom = zoomDefault;
         cameraSpeed = new Vector2(0,0);
 
-        //Init game engine
-        engine = new GameEngine(stage,worldSize);
+        camera = new OrthographicCamera();
+        camera.zoom = zoomDefault;
+        camera.near = 100.f;
+        camera.far = -100.f;
+        camera.update();
+        camera.position.set(0,0,0);
 
-
-        //Internalization
-        FileHandle baseFileHandle = Gdx.files.internal("I18N/GameScreenBundle");
-        Locale locale = new Locale("en", "GB");
-        myBundle = I18NBundle.createBundle(baseFileHandle, locale);
+        // Viewports helps managing the camera render area in function of the device
+        viewport = new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),camera);
 
         // UI
-        hudStage = new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()),g.batch);
+        hudStage = new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()),topApplication.batch2D);
         //Compute padding
         //TODO : to use
         float padding = Gdx.graphics.getHeight()/20;
@@ -147,25 +117,18 @@ public class GameScreen implements Screen {
         score = new Label("0",skin);
         table.add(score).expandX();
 
-        // Event management
-        MyGestureListener gestureListener = new MyGestureListener();
-        gestureListener.setGamescreen(this);
-
+        // High level interpretation of gesture
+        MyGestureListener gestureListener = new MyGestureListener(this);
+        // Just to know when touch down has been pressed
         MyGestureDetector detector = new MyGestureDetector(gestureListener,this);
         detector.setLongPressSeconds(0.4f);
 
+        // Multiplexing the events to the app's different UI layers
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(hudStage);
-        multiplexer.addProcessor(stage);
+        //multiplexer.addProcessor(stage);
         multiplexer.addProcessor(detector);
         Gdx.input.setInputProcessor(multiplexer);
-
-        //PARTICLE EFFECTS
-        effect = new ParticleEffect();
-        effect.load(Gdx.files.internal("Particles/green_peaceful_flame"), Gdx.files.internal("Particles"));
-        effect.setPosition(300, 300);
-        effect.findEmitter("Fire").setContinuous(true);
-        effect.start();
 
         shapeRenderer = new ShapeRenderer();
 
@@ -174,100 +137,65 @@ public class GameScreen implements Screen {
         debugRenderer.setDrawVelocities(true);
     }
 
-    public void loadLevelData(FileHandle level){
-
-    }
-
     @Override
     public void render(float delta) {
-
-        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        Gdx.gl.glClearColor(0.f, 0.f, 0.f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         // Let camera slide at the end of the fling
-        stage.getCamera().translate(cameraSpeed.x * delta, cameraSpeed.y * delta, 0.f);
-        final float alpha = 0.81f;
+        camera.translate(cameraSpeed.x * delta, cameraSpeed.y * delta, 0.f);
         // Increase alpha when zoom has a low value (big zoom)
         cameraSpeed.x *= alpha;
         cameraSpeed.y *= alpha;
+        camera.update();
 
-        stage.act(delta);
-        stage.getCamera().update();
-        debugDraw(stage.getCamera().combined);
-        stage.draw();
+        debugDraw(camera.combined);
 
-        debugRenderer.render(engine.world, stage.getViewport().getCamera().combined);
+        updateUI();
 
+        engine.update(delta);
         hudStage.act(delta);
+
+        engine.render(topApplication.batch3D, topApplication.batch2D,camera);
+
+        debugRenderer.render(engine.world, camera.combined);
         hudStage.draw();
+    }
 
-        engine.doPhysicsStep(delta);
-
-
+    public void updateUI(){
+        // Update charging bar
         float force = engine.getChargePercent();
         bar.setValue(force);
-
         score.setText(Integer.toString(engine.getScore()));
     }
 
-    public Vector2 screenVectorToWorld(Vector2 velocity){
-        Vector2 start = stage.getViewport().unproject(new Vector2(0,0));
-        Vector2 end = stage.getViewport().unproject(velocity);
-
-        // Compute speed in world coordinates to account for zoom levels
-        Vector2 diff = start.mulAdd(end, -1);
-
-        return diff;
-    }
-
-
     @Override
     public void resize(int x, int y){
-        stage.getViewport().update(x, y, false);
+        viewport.update(x, y, false);
         hudStage.getViewport().update(x,y,false);
     }
 
     @Override
-    public void show(){
-
-    }
-
-    @Override
-    public void hide(){
-        //Nothing to do at screen stop
-    }
-
-    @Override
-    public void pause(){
-        //Nothing to do at screen pause
-    }
-
-    @Override
-    public void resume(){
-        //Nothing to do at screen resume
-    }
-
-    @Override
     public void dispose(){
-        stage.dispose();
+        //stage.dispose();
         hudStage.dispose();
         shapeRenderer.dispose();
     }
 
     public void touchUpAction(float x, float y){
-        Vector2 v = stage.getViewport().unproject(new Vector2(x,y));
+        Vector2 v = viewport.unproject(new Vector2(x,y));
         engine.endCharge(v.x, v.y);
     }
 
     public void longPressAction(float x, float y){
-        Vector2 w = stage.getViewport().unproject(new Vector2(x, y));
+        Vector2 w = viewport.unproject(new Vector2(x, y));
         engine.startCharge();
     }
 
     //EVENTS
     //Used to store initial zoom
     public void TouchDown(){
-        initial_zoom = ((OrthographicCamera)this.stage.getCamera()).zoom;
+        initial_zoom = camera.zoom;
         cameraSpeed.x = 0;
         cameraSpeed.y = 0;
         engine.cancelCharge();
@@ -281,14 +209,18 @@ public class GameScreen implements Screen {
     public void Pan(Vector2 start, Vector2 end)
     {
         // Translate start and end position from screen to world
-        Vector2 start_world = stage.getViewport().unproject(start);
-        Vector2 end_world = stage.getViewport().unproject(end);
+        Vector2 start_world = viewport.unproject(start);
+        Vector2 end_world = viewport.unproject(end);
         // Compute delta in world coordinates
         // So that, no matter the zoom the physical move of the finger
         // will correspond to the same translation in the world
         Vector2 diff = start_world.mulAdd(end_world,-1);
 
-        stage.getCamera().translate(diff.x,diff.y,0.f);
+        camera.translate(diff.x,diff.y,0.f);
+
+        //Gdx.app.log("GameScreen", "Start(" + start_world.x + " ; " + start_world.y + ")");
+        //Gdx.app.log("GameScreen", "Stop(" + end_world.x + " ; " + end_world.y + ")");
+        //Gdx.app.log("GameScreen",camera.position.x+" ; "+camera.position.y);
 
         // Prevent camera from going outside world
         // TODO : Use frustum to compute edge location at game plane level
@@ -296,8 +228,8 @@ public class GameScreen implements Screen {
     }
 
     public void Fling(float velocityX, float velocityY){
-        Vector2 start = stage.getViewport().unproject(new Vector2(0,0));
-        Vector2 end = stage.getViewport().unproject(new Vector2(velocityX,velocityY));
+        Vector2 start = viewport.unproject(new Vector2(0,0));
+        Vector2 end = viewport.unproject(new Vector2(velocityX,velocityY));
 
         // Compute speed in world coordinates to account for zoom levels
         Vector2 diff = start.mulAdd(end, -1);
@@ -310,7 +242,7 @@ public class GameScreen implements Screen {
     {
         float ratio = originalDistance / currentDistance;
         float final_zoom = MathUtils.clamp(initial_zoom * ratio, zoomMin, zoomMax);
-        ((OrthographicCamera)this.stage.getCamera()).zoom = final_zoom;
+        camera.zoom = final_zoom;
     }
 
     public void debugDraw(Matrix4 combined){
@@ -345,7 +277,7 @@ public class GameScreen implements Screen {
         pixmap.fill();
         skin.add("white", new Texture(pixmap));
 
-        skin.add("default",game.font);
+        skin.add("default",topApplication.font);
 
         //TEXT BUTTON SKIN
         TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();

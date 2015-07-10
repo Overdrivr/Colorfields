@@ -1,11 +1,11 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -15,23 +15,22 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-
-import java.awt.font.TransformAttribute;
 
 /**
  * Created by Bart on 14/05/2015.
  */
 public class MassiveAsteroid extends Actor {
     final GameEngine g;
-
     public Body body;
-    Group root;
+    //Group root;
 
     Pixmap pixmap;
     Texture texture;
     TextureRegion textureRegion;
-    Image image;
+    Sprite sprite;
+    //Image image;
 
     public MassiveAsteroid(final GameEngine game, String filename, Vector2 position, float distance){
         g = game;
@@ -48,11 +47,7 @@ public class MassiveAsteroid extends Actor {
         texture = new Texture(pixmap);
         textureRegion = new TextureRegion(texture);
         textureRegion.flip(false,true);
-        image = new Image(textureRegion);
-        image.setScale(0.01f);
-
-        // Attach the class to the stage
-        g.stage.addActor(this);
+        sprite = new Sprite(textureRegion);
 
         //Detect contour from pixmap
         Array<Vector2> raw_contour = g.converter.marchingSquares(pixmap);
@@ -81,23 +76,27 @@ public class MassiveAsteroid extends Actor {
         // Create our body in the world using our body definition
         body = g.world.createBody(bodyDef);
 
+        // convert Array<Vector2> to FloatArray
+        // For some reason the first vertice messes up two different triangulation algorithm
+        // Remove it (maybe the first and last detected points of contour are identical)
+        FloatArray array = new FloatArray();
+        for(int i = 1 ; i < simplified_contour.size ; i++){
+            array.add(simplified_contour.get(i).x);
+            array.add(simplified_contour.get(i).y);
+        }
+
         // Create the polygon shapes from the contour and attach them to the body
-        g.triangulator.BuildShape(body, fixtureDef, simplified_contour);
+        g.triangulator.BuildShape(body, fixtureDef, array);
 
-        //Create root node that will take the physical body position and rotation
-        root = new Group();
-        root.setTransform(true);
-        g.stage.addActor(root);
-
-        //Attach image to root node
-        root.addActor(image);
+        sprite.setOrigin(0,0);
+        sprite.setScale(0.01f);
     }
 
-    public void draw(Batch batch, float parentAlpha){
-
-        root.setPosition(body.getPosition().x, body.getPosition().y);
-        root.setRotation((float) (Math.toDegrees(body.getAngle())));
-        root.draw(batch, parentAlpha);
+    public void draw(SpriteBatch batch){
+        //sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
+        sprite.setPosition(body.getPosition().x, body.getPosition().y);
+        sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
+        sprite.draw(batch);
     }
 
     // Dispose () ? Remove the root and image from stage

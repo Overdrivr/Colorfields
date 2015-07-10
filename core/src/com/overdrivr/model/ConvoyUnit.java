@@ -1,6 +1,5 @@
-package com.mygdx.game;
+package com.overdrivr.model;
 
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -11,9 +10,6 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /**
@@ -23,7 +19,7 @@ public class ConvoyUnit extends Actor {
     Sprite sprite;
     private final GameEngine engine;
     int unit_type;
-    Convoy convoy;
+    com.overdrivr.model.Convoy convoy;
     public Body body;
 
     public ConvoyUnit(GameEngine e, Convoy c, int type, Vector2 position,
@@ -82,17 +78,20 @@ public class ConvoyUnit extends Actor {
         sprite.setScale(factor);
         sprite.setOriginCenter();// Utile ?
 
-        // Attach this to the stage for draw() to be called on render loop
-        engine.stage.addActor(this);
+        // Attach the image to the stage
+        //engine.stage.addActor(this);
     }
 
-    public void draw(Batch batch, float parentAlpha) {
+    public void draw(Batch batch2D) {
         sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
         sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
-        sprite.draw(batch, parentAlpha);
+        sprite.draw(batch2D);
     }
-
+    
     public void dispose(){
+        // Remove from physics
+        engine.world.destroyBody(body);
+        // Remove from display
         this.remove();
     }
 }
