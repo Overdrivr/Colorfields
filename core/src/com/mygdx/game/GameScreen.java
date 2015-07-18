@@ -139,7 +139,7 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.f, 0.f, 0.f, 1);
+        Gdx.gl.glClearColor(0.9f, 0.9f, 0.9f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         // Let camera slide at the end of the fling

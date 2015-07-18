@@ -108,7 +108,8 @@ public class SphereOre extends Actor{
             //Gdx.app.log("Asset size", Float.toString() + " " + Float.toString());
             root.addActor(asset);*/
 
-            sprite.setOriginCenter();// Utile ?
+            //sprite.setOriginCenter();// Utile ?
+            sprite.setOrigin(0,0);
         }
     }
 
@@ -117,7 +118,8 @@ public class SphereOre extends Actor{
         /*root.setPosition(body.getPosition().x,body.getPosition().y);
         root.setRotation((float) (Math.toDegrees(body.getAngle())));
         root.draw(batch, parentAlpha);*/
-        sprite.setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
+        //setPosition(body.getPosition().x - sprite.getWidth()/2, body.getPosition().y - sprite.getHeight()/2);
+        sprite.setPosition(body.getPosition().x, body.getPosition().y);
         sprite.setRotation((float) (Math.toDegrees(body.getAngle())));
         sprite.draw(batch, parentAlpha);
     }

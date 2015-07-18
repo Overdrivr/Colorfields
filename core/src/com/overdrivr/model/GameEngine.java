@@ -2,10 +2,14 @@ package com.overdrivr.model;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.ExternalFileHandleResolver;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -20,6 +24,7 @@ import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
 import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.overdrivr.tools.ContourToPolygons;
 import com.overdrivr.tools.PNGtoBox2D;
@@ -50,9 +55,13 @@ public class GameEngine {
     private Array<Static3DAsteroid> asteroids;
     private Array<MassiveAsteroid> massiveAsteroids;
     private Array<SphereOre> ores;
+    private Array<AnimatedPlant> plants;
     private RayHandler rayHandler;
     private PointLight light;
     Array<String> imagename_lookup;
+
+    public AssetManager assetManager;
+    private Assets assets;
 
     /////// Game variables
     private float accumulator = 0;
@@ -75,7 +84,6 @@ public class GameEngine {
     ContourToPolygons triangulator;
     PNGtoBox2D converter;
     Random rnd;
-    AssetManager assetManager;
 
     ////// Debug objects
     ShapeRenderer renderer;
@@ -88,8 +96,6 @@ public class GameEngine {
     public Array<ConvoyUnit> markedContainersForDestroy;
     public Array<MouseJointData> markedMouseJointsToBuild;
     public Array<Convoy> markedConvoysForDestroy;
-
-
 
     public GameEngine(){
 
@@ -104,7 +110,16 @@ public class GameEngine {
         triangulator = new ContourToPolygons();
         renderer = new ShapeRenderer();
         rnd = new Random();
+
+        // Build the asset manager & load 'em all
         assetManager = new AssetManager();
+        assetManager.setLoader(Model.class, new G3dModelLoader(new JsonReader()));
+        //assets = new Assets();
+        //assets.loadAll(assetManager);
+        assetManager.load("Models/B1/B1.g3db",Model.class);
+
+        assetManager.finishLoading();
+
         initLevel(worldSize);
 
         spent_time = 0;
@@ -169,6 +184,10 @@ public class GameEngine {
         asteroids = new Array<Static3DAsteroid>();
         asteroids.add(new Static3DAsteroid(this));
 
+        // Plants
+        plants = new Array<AnimatedPlant>();
+        plants.add(new AnimatedPlant(this));
+
         // World boundaries
         WorldLimits limits = new WorldLimits(this,-worldSize/2,worldSize/2,worldSize/2,-worldSize/2,0.5f);
 
@@ -180,10 +199,13 @@ public class GameEngine {
     public void render(ModelBatch batch3d,SpriteBatch batch2d,Camera camera){
 
         batch3d.begin(camera);
-        for(Static3DAsteroid a : asteroids)
-            a.render(batch3d);
-        batch3d.end();
+        /*for(Static3DAsteroid a : asteroids)
+            a.render(batch3d);*/
 
+        for(AnimatedPlant p : plants)
+            p.render(batch3d);
+        batch3d.end();
+/*
         batch2d.setProjectionMatrix(camera.combined);
         batch2d.begin();
         for(Convoy c : convoys)
@@ -191,10 +213,10 @@ public class GameEngine {
 
         for(MassiveAsteroid a : massiveAsteroids)
             a.draw(batch2d);
-        batch2d.end();
+        batch2d.end();*/
 
-        rayHandler.setCombinedMatrix(camera.combined);
-        rayHandler.updateAndRender();
+        //rayHandler.setCombinedMatrix(camera.combined);
+        //rayHandler.updateAndRender();
     }
 
     public void update(float deltaTime){
@@ -378,9 +400,11 @@ public class GameEngine {
 
     public void dispose(){
         rayHandler.dispose();
-        assetManager.dispose();
+
         for(Static3DAsteroid a : asteroids)
             a.dispose();
+
+        assetManager.dispose();
     }
 
 }
