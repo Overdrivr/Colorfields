@@ -139,7 +139,7 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.9f, 0.9f, 0.9f, 1);
+        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         // Let camera slide at the end of the fling
@@ -158,7 +158,7 @@ public class GameScreen extends ScreenAdapter {
 
         engine.render(topApplication.batch3D, topApplication.batch2D,camera);
 
-        debugRenderer.render(engine.world, camera.combined);
+        //debugRenderer.render(engine.world, camera.combined);
         hudStage.draw();
     }
 
@@ -249,7 +249,6 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.setProjectionMatrix(combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        engine.field.debug_draw(shapeRenderer,combined);
         //Draw XY reference
         float x1 = -worldSize/2;
         float x2 = +worldSize/2;
