@@ -13,6 +13,6 @@ import com.badlogic.gdx.utils.BaseJsonReader;
 public class Assets {
 
     public void loadAll(AssetManager manager){
-        manager.load("Models/B1/B1.g3dg",Model.class);
+        manager.load("Models/B1/B1.g3db",Model.class);
     }
 }
