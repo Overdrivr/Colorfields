@@ -206,8 +206,6 @@ public class GameEngine {
             p.render(batch3d);
         batch3d.end();
 /*
-        engine.field.debug_draw(shapeRenderer,combined);
-
         batch2d.setProjectionMatrix(camera.combined);
         batch2d.begin();
         for(Convoy c : convoys)

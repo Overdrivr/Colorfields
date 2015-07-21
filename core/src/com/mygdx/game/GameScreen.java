@@ -158,7 +158,7 @@ public class GameScreen extends ScreenAdapter {
 
         engine.render(topApplication.batch3D, topApplication.batch2D,camera);
 
-        //debugRenderer.render(engine.world, camera.combined);
+        debugRenderer.render(engine.world, camera.combined);
         hudStage.draw();
     }
 
@@ -248,7 +248,7 @@ public class GameScreen extends ScreenAdapter {
     public void debugDraw(Matrix4 combined){
         shapeRenderer.setProjectionMatrix(combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
+        //engine.field.debug_draw(shapeRenderer,combined);
         //Draw XY reference
         float x1 = -worldSize/2;
         float x2 = +worldSize/2;

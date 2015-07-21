@@ -19,7 +19,7 @@ public class ConvoyUnit extends Actor {
     Sprite sprite;
     private final GameEngine engine;
     int unit_type;
-    com.overdrivr.model.Convoy convoy;
+    Convoy convoy;
     public Body body;
 
     public ConvoyUnit(GameEngine e, Convoy c, int type, Vector2 position,
