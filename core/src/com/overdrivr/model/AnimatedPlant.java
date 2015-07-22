@@ -43,7 +43,7 @@ public class AnimatedPlant {
     private final ModelInstance sphereInstance;
 
     public Body groundAnchor;
-    private Body restingAnchor;
+    private Body restingAnchorRight,restingAnchorLeft;
     public Body body;
 
     public AnimatedPlant(GameEngine e){
@@ -67,15 +67,9 @@ public class AnimatedPlant {
         /// First bone
         BodyDef bodyDef2 = new BodyDef();
         bodyDef2.type = BodyDef.BodyType.DynamicBody;
-        bodyDef2.position.set(0,5);
+        bodyDef2.position.set(1,0);
         bodyDef2.angle = 0;
         body = e.world.createBody(bodyDef2);
-
-        /// Resting anchor
-        BodyDef bodyDef3 = new BodyDef();
-        bodyDef3.type = BodyDef.BodyType.KinematicBody;
-        bodyDef3.position.set(-1,3);
-        restingAnchor = e.world.createBody(bodyDef3);
 
         MyBodyData data = new MyBodyData();
         data.type = BodyType.BODY_TYPE_DEFAULTS;
@@ -91,22 +85,40 @@ public class AnimatedPlant {
         fixtureDef.restitution = 0.6f;
         body.createFixture(fixtureDef);
 
+        /// Resting anchor
+        BodyDef bodyDef3 = new BodyDef();
+        bodyDef3.type = BodyDef.BodyType.KinematicBody;
+        bodyDef3.position.set(1,2);
+        restingAnchorRight = e.world.createBody(bodyDef3);
+
+        BodyDef bodyDef4 = new BodyDef();
+        bodyDef4.type = BodyDef.BodyType.KinematicBody;
+        bodyDef4.position.set(-1,2);
+        restingAnchorLeft = e.world.createBody(bodyDef4);
+
         //Joints
         /// Joint to ground anchor
         DistanceJointDef jointDef = new DistanceJointDef();
         jointDef.bodyA = groundAnchor;
         jointDef.bodyB = body;
-        jointDef.frequencyHz=10.f;
-        jointDef.dampingRatio = 0.1f;
+        //jointDef.frequencyHz=10.f;
+        //jointDef.dampingRatio = 0.1f;
         engine.world.createJoint(jointDef);
 
         /// Joint to resting anchor
-        /*DistanceJointDef jointDef2 = new DistanceJointDef();
-        jointDef2.bodyA = restingAnchor;
+        DistanceJointDef jointDef2 = new DistanceJointDef();
+        jointDef2.bodyA = restingAnchorRight;
         jointDef2.bodyB = body;
-        jointDef2.frequencyHz=10.f;
+        jointDef2.frequencyHz=0.3f;
         jointDef2.dampingRatio = 0.1f;
-        engine.world.createJoint(jointDef2);*/
+        engine.world.createJoint(jointDef2);
+
+        DistanceJointDef jointDef3 = new DistanceJointDef();
+        jointDef3.bodyA = restingAnchorLeft;
+        jointDef3.bodyB = body;
+        jointDef3.frequencyHz=0.3f;
+        jointDef3.dampingRatio = 0.1f;
+        engine.world.createJoint(jointDef3);
 
         shape.dispose();
 
@@ -127,7 +139,13 @@ public class AnimatedPlant {
 
         // Update anchor
         //restingAnchor.setLinearVelocity((float)(Math.sin(angle/30.f)),0);
-        body.applyForceToCenter((float)(Math.sin(angle/30.f)),0,true);
+        //body.applyForceToCenter((float)(Math.sin(angle/30.f)),0,true);
+
+        // Update first spring
+        //Calculate distance
+        //Vector2 distances = body.getWorldCenter().mulAdd(restingAnchor.getWorldCenter(),-1);
+        //float k = 0.5f;
+        //body.applyForceToCenter(-distances.x,-distances.y,true);
 
         if(debugDrawBones){
             //rootBone.calculateTransforms(true);
