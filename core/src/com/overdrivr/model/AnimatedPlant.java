@@ -138,17 +138,12 @@ public class AnimatedPlant {
         batch.render(modelInstance);
 
         // Update anchor
-        //restingAnchor.setLinearVelocity((float)(Math.sin(angle/30.f)),0);
-        //body.applyForceToCenter((float)(Math.sin(angle/30.f)),0,true);
-
-        // Update first spring
-        //Calculate distance
-        //Vector2 distances = body.getWorldCenter().mulAdd(restingAnchor.getWorldCenter(),-1);
-        //float k = 0.5f;
-        //body.applyForceToCenter(-distances.x,-distances.y,true);
+        //restingAnchorRight.setLinearVelocity((float)(Math.sin(angle/30.f)),0);
+        //restingAnchorLeft.setLinearVelocity((float)(Math.sin(angle/30.f)),0);
+        restingAnchorLeft.setTransform((float)(Math.sin(angle/100.f))+1,2,0);
+        restingAnchorRight.setTransform((float)(Math.sin(angle/100.f))-1,2,0);
 
         if(debugDrawBones){
-            //rootBone.calculateTransforms(true);
             recursiveRender(batch, rootBone);
         }
     }
