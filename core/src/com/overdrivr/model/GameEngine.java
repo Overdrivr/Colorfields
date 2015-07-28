@@ -56,6 +56,7 @@ public class GameEngine {
     private Array<MassiveAsteroid> massiveAsteroids;
     private Array<SphereOre> ores;
     private Array<AnimatedPlant> plants;
+    private AnimatedPlantB1 b1;
     private RayHandler rayHandler;
     private PointLight light;
     Array<String> imagename_lookup;
@@ -186,7 +187,8 @@ public class GameEngine {
 
         // Plants
         plants = new Array<AnimatedPlant>();
-        plants.add(new AnimatedPlant(this));
+        //plants.add(new AnimatedPlant(this));
+        b1 = new AnimatedPlantB1(this);
 
         // World boundaries
         WorldLimits limits = new WorldLimits(this,-worldSize/2,worldSize/2,worldSize/2,-worldSize/2,0.5f);
@@ -202,8 +204,10 @@ public class GameEngine {
         /*for(Static3DAsteroid a : asteroids)
             a.render(batch3d);*/
 
-        for(AnimatedPlant p : plants)
-            p.render(batch3d);
+        //for(AnimatedPlant p : plants)
+        //    p.render(batch3d);
+
+        b1.render(batch3d);
         batch3d.end();
 /*
         batch2d.setProjectionMatrix(camera.combined);
